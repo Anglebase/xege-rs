@@ -103,7 +103,7 @@ impl XEGE {
         unsafe { ege_is_run() }
     }
 
-    pub fn set_caption(&self, caption: &str) {
+    pub fn set_caption(&mut self, caption: &str) {
         let wchar_arr: Vec<u16> = caption.encode_utf16().collect();
         let wchar_ptr = wchar_arr.as_ptr();
         unsafe { ege_setcaption1(wchar_ptr) };
