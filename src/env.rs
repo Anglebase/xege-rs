@@ -1,6 +1,8 @@
 use std::{ptr::null_mut, sync::Mutex};
 use xege_ffi::*;
 
+use crate::window::Window;
+
 /// The initialization options.
 #[bitmask_enum::bitmask(i32)]
 pub enum Init {
@@ -36,7 +38,9 @@ pub enum Init {
 
 #[allow(dead_code)]
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct XEGE(*mut ());
+pub struct XEGE{
+    pub window: Window,
+}
 
 #[derive(Debug, thiserror::Error)]
 pub enum XEGEError {
@@ -68,7 +72,9 @@ pub fn initgraph(width: i32, height: i32, mode: Init) -> Result<XEGE, XEGEError>
     unsafe {
         ege_initgraph(width, height, mode.bits | ege_initmode_flag_INIT_UNICODE);
     }
-    Ok(XEGE(null_mut()))
+    Ok(XEGE{
+        window: Window(null_mut()),
+    })
 }
 
 impl Drop for XEGE {
