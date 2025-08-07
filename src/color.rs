@@ -1,3 +1,4 @@
+/// Color
 pub type Color = palette::Srgba<u8>;
 
 pub trait IntoARGB {

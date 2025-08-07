@@ -38,6 +38,7 @@ pub enum Init {
     Animation = ege_initmode_flag_INIT_ANIMATION,
 }
 
+/// Graphics environment.
 #[allow(dead_code)]
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct XEGE {
@@ -105,8 +106,15 @@ impl XEGE {
         unsafe { ege_is_run() }
     }
 
+    /// Sets the window caption.
+    /// 
+    /// # Arguments
+    /// * `caption` - The caption of the window.
+    /// 
+    /// # Note
+    /// The caption is displayed in the title bar of the window.
     pub fn set_caption(&mut self, caption: &str) {
-        let wchar_arr: Vec<u16> = caption.encode_utf16().collect();
+        let wchar_arr: Vec<u16> = caption.encode_utf16().chain(Some(0)).collect();
         let wchar_ptr = wchar_arr.as_ptr();
         unsafe { ege_setcaption1(wchar_ptr) };
     }

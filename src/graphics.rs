@@ -1,6 +1,6 @@
-use crate::Color;
 use crate::color::IntoARGB;
-use crate::enums::*;
+use crate::{Color, Image};
+use crate::{ImageError, enums::*};
 use xege_ffi::*;
 
 /// Base trait for drawable devices.
@@ -250,7 +250,7 @@ pub trait GraphicsEnvironment: DrawableDevice {
     /// # Return
     /// The height of the text.
     fn textheight(&mut self, text: &str) -> i32 {
-        let wchar = text.encode_utf16().collect::<Vec<u16>>();
+        let wchar = text.encode_utf16().chain(Some(0)).collect::<Vec<u16>>();
         unsafe { ege_textheight1(wchar.as_ptr(), self.mut_ptr()) }
     }
 
@@ -262,7 +262,7 @@ pub trait GraphicsEnvironment: DrawableDevice {
     /// # Return
     /// The width of the text.
     fn textwidth(&mut self, text: &str) -> i32 {
-        let wchar = text.encode_utf16().collect::<Vec<u16>>();
+        let wchar = text.encode_utf16().chain(Some(0)).collect::<Vec<u16>>();
         unsafe { ege_textwidth1(wchar.as_ptr(), self.mut_ptr()) }
     }
 
@@ -273,6 +273,19 @@ pub trait GraphicsEnvironment: DrawableDevice {
     /// * `vert` - The vertical alignment.
     fn settextjustify(&mut self, horiz: TextHAlign, vert: TextVAlign) {
         unsafe { ege_settextjustify(horiz as i32, vert as i32, self.mut_ptr()) };
+    }
+
+    /// Get Image Buffer.
+    ///
+    /// # Return
+    /// Pointer to the starting position of the image data memory.
+    /// Each `u32` represents a pixel in `ARGB` format.
+    fn getbuffer(&mut self) -> *mut u32 {
+        unsafe { ege_getbuffer(self.mut_ptr()) }
+    }
+
+    fn set_alpha(&mut self, alpha: u8) {
+        unsafe { ege_ege_setalpha(alpha as _, self.mut_ptr()) };
     }
 }
 
@@ -931,7 +944,7 @@ pub trait Draw: DrawableDevice {
     /// # Arguments
     /// * `text` - The text to output.
     fn outtext(&mut self, text: &str) {
-        let text = text.encode_utf16().collect::<Vec<u16>>();
+        let text = text.encode_utf16().chain(Some(0)).collect::<Vec<u16>>();
         unsafe { ege_outtext1(text.as_ptr(), self.mut_ptr()) };
     }
 
@@ -944,7 +957,7 @@ pub trait Draw: DrawableDevice {
     /// * `h` - The height of the rectangle.
     /// * `text` - The text to output.
     fn outtextrect(&mut self, x: i32, y: i32, w: i32, h: i32, text: &str) {
-        let text = text.encode_utf16().collect::<Vec<u16>>();
+        let text = text.encode_utf16().chain(Some(0)).collect::<Vec<u16>>();
         unsafe { ege_outtextrect1(x, y, w, h, text.as_ptr(), self.mut_ptr()) };
     }
 
@@ -955,7 +968,7 @@ pub trait Draw: DrawableDevice {
     /// * `y` - The y position.
     /// * `text` - The text to output.
     fn outtextxy(&mut self, x: i32, y: i32, text: &str) {
-        let text = text.encode_utf16().collect::<Vec<u16>>();
+        let text = text.encode_utf16().chain(Some(0)).collect::<Vec<u16>>();
         unsafe { ege_outtextxy1(x, y, text.as_ptr(), self.mut_ptr()) };
     }
 }
@@ -1196,17 +1209,388 @@ pub trait HighDraw: DrawableDevice {
     }
 
     /// Output text at position `(x, y)`.
-    /// 
+    ///
     /// # Arguments
     /// * `x` - The x position.
     /// * `y` - The y position.
     /// * `text` - The text to output.
     fn outtextxy(&mut self, x: f32, y: f32, text: &str) {
-        let text = text.encode_utf16().collect::<Vec<u16>>();
+        let text = text.encode_utf16().chain(Some(0)).collect::<Vec<u16>>();
         unsafe { ege_ege_outtextxy1(x, y, text.as_ptr(), self.mut_ptr()) };
+    }
+}
+
+fn rop3(gen_rop3: impl Fn(u8, u8, u8) -> u8) -> u32 {
+    gen_rop3(0b11110000, 0b11001100, 0b10101010) as u32
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct Rect<T = i32> {
+    pub x: T,
+    pub y: T,
+    pub width: T,
+    pub height: T,
+}
+
+pub trait ImageDraw: DrawableDevice {
+    /// Draw an image.
+    ///
+    /// # Arguments
+    /// * `image` - The image to draw.
+    /// * `x` - The x position of the top-left corner.
+    /// * `y` - The y position of the top-left corner.
+    /// * `gen_rop3` - A function to generate the ROP3 code.
+    ///
+    /// # Note
+    /// The `gen_rop3` function takes three parameters:
+    ///     - `Pen` mask.
+    ///     - `Src` mask.
+    ///     - `Dst` mask.
+    ///
+    /// For example, the `DPo` is `|P, S, D| D | P`, the `DPSoo` is `|P, S, D| (S | P) | D`, and so on.
+    fn putimage(&mut self, x: i32, y: i32, image: &Image, gen_rop3: impl Fn(u8, u8, u8) -> u8) {
+        if self.mut_ptr().is_null() {
+            unsafe { ege_putimage(x, y, image.const_ptr(), rop3(gen_rop3)) };
+        } else {
+            unsafe { ege_putimage3(self.mut_ptr(), x, y, image.const_ptr(), rop3(gen_rop3)) };
+        }
+    }
+
+    fn putimage_with_size(
+        &mut self,
+        dest: Rect,
+        image: &Image,
+        x_src: i32,
+        y_src: i32,
+        gen_rop3: impl Fn(u8, u8, u8) -> u8,
+    ) {
+        if self.mut_ptr().is_null() {
+            unsafe {
+                ege_putimage1(
+                    dest.x,
+                    dest.y,
+                    dest.width,
+                    dest.height,
+                    image.const_ptr(),
+                    x_src,
+                    y_src,
+                    rop3(gen_rop3),
+                );
+            }
+        } else {
+            unsafe {
+                ege_putimage4(
+                    self.mut_ptr(),
+                    dest.x,
+                    dest.y,
+                    dest.width,
+                    dest.height,
+                    image.const_ptr(),
+                    x_src,
+                    y_src,
+                    rop3(gen_rop3),
+                );
+            }
+        }
+    }
+
+    fn putimage_with_scale(
+        &mut self,
+        dest: Rect,
+        image: &Image,
+        src: Rect,
+        gen_rop3: impl Fn(u8, u8, u8) -> u8,
+    ) {
+        if self.mut_ptr().is_null() {
+            unsafe {
+                ege_putimage2(
+                    dest.x,
+                    dest.y,
+                    dest.width,
+                    dest.height,
+                    image.const_ptr(),
+                    src.x,
+                    src.y,
+                    src.width,
+                    src.height,
+                    rop3(gen_rop3),
+                );
+            }
+        } else {
+            unsafe {
+                ege_putimage5(
+                    self.mut_ptr(),
+                    dest.x,
+                    dest.y,
+                    dest.width,
+                    dest.height,
+                    image.const_ptr(),
+                    src.x,
+                    src.y,
+                    src.width,
+                    src.height,
+                    rop3(gen_rop3),
+                );
+            }
+        }
+    }
+
+    fn putimage_with_alpha(
+        &mut self,
+        image: &Image,
+        dest: Rect,
+        src: Rect,
+        smooth: bool,
+    ) -> Result<(), ImageError> {
+        let result = unsafe {
+            ege_putimage_withalpha1(
+                self.mut_ptr(),
+                image.const_ptr(),
+                dest.x,
+                dest.y,
+                dest.width,
+                dest.height,
+                src.x,
+                src.y,
+                src.width,
+                src.height,
+                smooth,
+            )
+        };
+        Image::handle_result(result)
+    }
+
+    fn putimage_alphablender(
+        &mut self,
+        image: &Image,
+        dest: Rect,
+        alpha: u8,
+        src: Rect,
+        smooth: bool,
+        alpha_type: AlphaType,
+    ) -> Result<(), ImageError> {
+        let result = unsafe {
+            ege_putimage_alphablend3(
+                self.mut_ptr(),
+                image.const_ptr(),
+                dest.x,
+                dest.y,
+                dest.width,
+                dest.height,
+                alpha,
+                src.x,
+                src.y,
+                src.width,
+                src.height,
+                smooth,
+                alpha_type as i32,
+            )
+        };
+        Image::handle_result(result)
+    }
+
+    fn putimage_alphafilter(
+        &mut self,
+        image: &Image,
+        x_dest: i32,
+        y_dest: i32,
+        alpha: &Image,
+        src: Rect,
+    ) -> Result<(), ImageError> {
+        let result = unsafe {
+            ege_putimage_alphafilter(
+                self.mut_ptr(),
+                image.const_ptr(),
+                x_dest,
+                y_dest,
+                alpha.const_ptr(),
+                src.x,
+                src.y,
+                src.width,
+                src.height,
+            )
+        };
+        Image::handle_result(result)
+    }
+
+    fn putimage_transparent(
+        &mut self,
+        image: &Image,
+        x_dest: i32,
+        y_dest: i32,
+        transparent: impl IntoARGB,
+        src: Rect,
+    ) -> Result<(), ImageError> {
+        let result = unsafe {
+            ege_putimage_transparent(
+                self.mut_ptr(),
+                image.const_ptr(),
+                x_dest,
+                y_dest,
+                transparent.into_argb(),
+                src.x,
+                src.y,
+                src.width,
+                src.height,
+            )
+        };
+        Image::handle_result(result)
+    }
+
+    fn putimage_alphatransparent(
+        &mut self,
+        image: &Image,
+        x_dest: i32,
+        y_dest: i32,
+        transparent: impl IntoARGB,
+        alpha: u8,
+        src: Rect,
+    ) -> Result<(), ImageError> {
+        let result = unsafe {
+            ege_putimage_alphatransparent(
+                self.mut_ptr(),
+                image.const_ptr(),
+                x_dest,
+                y_dest,
+                transparent.into_argb(),
+                alpha,
+                src.x,
+                src.y,
+                src.width,
+                src.height,
+            )
+        };
+        Image::handle_result(result)
+    }
+
+    fn putimage_rotate(
+        &mut self,
+        image: &Image,
+        x_dest: i32,
+        y_dest: i32,
+        x_center: f32,
+        y_center: f32,
+        radian: f32,
+        use_alpha: bool,
+        alpha: Option<u8>,
+        smooth: bool,
+    ) -> Result<(), ImageError> {
+        let result = unsafe {
+            ege_putimage_rotate(
+                self.mut_ptr(),
+                image.const_ptr(),
+                x_dest,
+                y_dest,
+                x_center,
+                y_center,
+                radian,
+                use_alpha,
+                if let Some(alpha) = alpha {
+                    alpha as i32
+                } else {
+                    -1
+                },
+                smooth,
+            )
+        };
+        Image::handle_result(result)
+    }
+
+    fn putimage_rotatezoom(
+        &mut self,
+        image: &Image,
+        x_dest: i32,
+        y_dest: i32,
+        x_center: f32,
+        y_center: f32,
+        radian: f32,
+        zoom: f32,
+        use_alpha: bool,
+        alpha: Option<u8>,
+        smooth: bool,
+    ) -> Result<(), ImageError> {
+        let result = unsafe {
+            ege_putimage_rotatezoom(
+                self.mut_ptr(),
+                image.const_ptr(),
+                x_dest,
+                y_dest,
+                x_center,
+                y_center,
+                radian,
+                zoom,
+                use_alpha,
+                if let Some(alpha) = alpha {
+                    alpha as i32
+                } else {
+                    -1
+                },
+                smooth,
+            )
+        };
+        Image::handle_result(result)
+    }
+
+    fn putimage_rotatetransparent(
+        &mut self,
+        image: &Image,
+        x_center_dest: i32,
+        y_center_dest: i32,
+        src: Rect,
+        x_center_src: i32,
+        y_center_src: i32,
+        transparent: impl IntoARGB,
+        radian: f32,
+        zoom: f32,
+    ) -> Result<(), ImageError> {
+        let result = unsafe {
+            ege_putimage_rotatetransparent1(
+                self.mut_ptr(),
+                image.const_ptr(),
+                x_center_dest,
+                y_center_dest,
+                src.x,
+                src.y,
+                src.width,
+                src.height,
+                x_center_src,
+                y_center_src,
+                transparent.into_argb(),
+                radian,
+                zoom,
+            )
+        };
+        Image::handle_result(result)
+    }
+
+    fn imagefilter_blurring(
+        &mut self,
+        intensity: i32,
+        alpha: u8,
+        dest: Option<Rect>,
+    ) -> Result<(), ImageError> {
+        let rect = dest.unwrap_or_else(|| Rect {
+            x: 0,
+            y: 0,
+            width: 0,
+            height: 0,
+        });
+        let result = unsafe {
+            ege_imagefilter_blurring(
+                self.mut_ptr(),
+                intensity,
+                alpha as _,
+                rect.x,
+                rect.y,
+                rect.width,
+                rect.height,
+            )
+        };
+        Image::handle_result(result)
     }
 }
 
 impl<T: DrawableDevice> GraphicsEnvironment for T {}
 impl<T: DrawableDevice> Draw for T {}
 impl<T: DrawableDevice> HighDraw for T {}
+impl<T: DrawableDevice> ImageDraw for T {}

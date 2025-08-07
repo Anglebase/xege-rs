@@ -376,7 +376,7 @@ pub struct Font {
 impl Into<LOGFONTW> for Font {
     fn into(self) -> LOGFONTW {
         let mut buff = [0u16; 32];
-        let facename = self.facename.encode_utf16().collect::<Vec<u16>>();
+        let facename = self.facename.encode_utf16().chain(Some(0)).collect::<Vec<u16>>();
         for (i, &c) in facename.iter().enumerate() {
             buff[i] = c;
         }
@@ -439,4 +439,12 @@ pub enum TextVAlign {
     Top = ege_text_just_TOP_TEXT,
     Center = ege_text_just_CENTER_TEXT,
     Bottom = ege_text_just_BOTTOM_TEXT,
+}
+
+#[repr(i32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+pub enum AlphaType {
+    #[default]
+    Straight = ege_alpha_type_ALPHATYPE_STRAIGHT,
+    PreMultiplied = ege_alpha_type_ALPHATYPE_PREMULTIPLIED,
 }
