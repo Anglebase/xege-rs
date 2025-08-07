@@ -1220,8 +1220,8 @@ pub trait HighDraw: DrawableDevice {
     }
 }
 
-fn rop3(gen_rop3: impl Fn(u8, u8, u8) -> u8) -> u32 {
-    gen_rop3(0b11110000, 0b11001100, 0b10101010) as u32
+fn rop3(gen_rop3: impl Fn(u32, u32, u32) -> u32) -> u32 {
+    gen_rop3(0xF00000, 0xCC0000, 0xAA0000)
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -1248,7 +1248,7 @@ pub trait ImageDraw: DrawableDevice {
     ///     - `Dst` mask.
     ///
     /// For example, the `DPo` is `|P, S, D| D | P`, the `DPSoo` is `|P, S, D| (S | P) | D`, and so on.
-    fn putimage(&mut self, x: i32, y: i32, image: &Image, gen_rop3: impl Fn(u8, u8, u8) -> u8) {
+    fn putimage(&mut self, x: i32, y: i32, image: &Image, gen_rop3: impl Fn(u32, u32, u32) -> u32) {
         if self.mut_ptr().is_null() {
             unsafe { ege_putimage(x, y, image.const_ptr(), rop3(gen_rop3)) };
         } else {
@@ -1262,7 +1262,7 @@ pub trait ImageDraw: DrawableDevice {
         image: &Image,
         x_src: i32,
         y_src: i32,
-        gen_rop3: impl Fn(u8, u8, u8) -> u8,
+        gen_rop3: impl Fn(u32, u32, u32) -> u32,
     ) {
         if self.mut_ptr().is_null() {
             unsafe {
@@ -1299,7 +1299,7 @@ pub trait ImageDraw: DrawableDevice {
         dest: Rect,
         image: &Image,
         src: Rect,
-        gen_rop3: impl Fn(u8, u8, u8) -> u8,
+        gen_rop3: impl Fn(u32, u32, u32) -> u32,
     ) {
         if self.mut_ptr().is_null() {
             unsafe {

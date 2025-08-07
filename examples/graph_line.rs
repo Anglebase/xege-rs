@@ -7,7 +7,7 @@ fn draw(xege: &mut impl Draw) {
 }
 
 fn main() {
-    let mut xege = initgraph(640, 480, Init::NoForceExit).unwrap();
+    let mut xege = initgraph(640, 480, Init::Default).unwrap();
     draw(&mut xege);
-    while xege.is_run() {}
+    loop {}
 }
