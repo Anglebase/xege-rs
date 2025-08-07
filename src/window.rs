@@ -6,7 +6,7 @@ pub struct Window(pub(crate) *mut ());
 impl Window {
     /// Move Window to (x, y) relative the screen.
     /// 
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The x coordinate of the new position.
     /// * `y` - The y coordinate of the new position.
     /// * `redraw` - If true, the window will be redrawn.
@@ -16,7 +16,7 @@ impl Window {
 
     /// Resize the window to (width, height).
     /// 
-    /// # Arguments
+    /// # Parameters
     /// * `width` - The new width of the window.
     /// * `height` - The new height of the window.
     pub fn resize(&mut self, width: i32, height: i32) {

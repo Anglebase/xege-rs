@@ -153,6 +153,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "13dc2df351e3202783a1fe0d44375f7295ffb4049267b0f3018346dc122a1d94"
 
 [[package]]
+name = "mats"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "35366bbede107ac6cf2a0305f5dee5985e8eeac3bfb81c360f372238b79a13fa"
+
+[[package]]
 name = "memchr"
 version = "2.7.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -452,6 +458,7 @@ name = "xege"
 version = "0.1.0"
 dependencies = [
  "bitmask-enum",
+ "mats",
  "palette",
  "thiserror",
  "xege-ffi",

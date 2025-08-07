@@ -1,5 +1,6 @@
 use crate::color::IntoARGB;
-use crate::{Color, Image};
+use crate::mat::IntoEGEMatrix;
+use crate::{Color, Image, Path};
 use crate::{ImageError, enums::*};
 use xege_ffi::*;
 
@@ -23,7 +24,7 @@ pub trait GraphicsEnvironment: DrawableDevice {
 
     /// Set current fill color.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `color` - The color to set.
     fn setfillcolor(&mut self, color: impl IntoARGB) {
         unsafe { ege_setfillcolor(color.into_argb(), self.mut_ptr()) };
@@ -31,7 +32,7 @@ pub trait GraphicsEnvironment: DrawableDevice {
 
     /// Set current color.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `color` - The color to set.
     fn setcolor(&mut self, color: impl IntoARGB) {
         unsafe { ege_setcolor(color.into_argb(), self.mut_ptr()) };
@@ -39,7 +40,7 @@ pub trait GraphicsEnvironment: DrawableDevice {
 
     /// Set current line color.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `color` - The color to set.
     fn setlinecolor(&mut self, color: impl IntoARGB) {
         unsafe { ege_setlinecolor(color.into_argb(), self.mut_ptr()) };
@@ -47,7 +48,7 @@ pub trait GraphicsEnvironment: DrawableDevice {
 
     /// Set current fill style.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `pattern` - The pattern to set.
     /// * `color` - The color to set.
     fn setfillstyle(&mut self, pattern: FillPattern, color: impl IntoARGB) {
@@ -56,7 +57,7 @@ pub trait GraphicsEnvironment: DrawableDevice {
 
     /// Set current line style.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `style` - The style to set.
     /// * `width` - The line width to set.
     fn setlinestyle(&mut self, style: LineStyle, width: i32) {
@@ -69,7 +70,7 @@ pub trait GraphicsEnvironment: DrawableDevice {
 
     /// Set current line cap.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `start` - The start cap to set.
     /// * `end` - The end cap to set.
     fn setlinecap(&mut self, start: LineCap, end: LineCap) {
@@ -78,7 +79,7 @@ pub trait GraphicsEnvironment: DrawableDevice {
 
     /// Set current line join.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `join` - The join to set.
     /// * `limit` - The limit to set.
     fn setlinejoin(&mut self, join: LineJoin, limit: f32) {
@@ -87,7 +88,7 @@ pub trait GraphicsEnvironment: DrawableDevice {
 
     /// Set current line width.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `width` - The width to set.
     fn setlinewidth(&mut self, width: f32) {
         unsafe { ege_setlinewidth(width, self.mut_ptr()) };
@@ -95,7 +96,7 @@ pub trait GraphicsEnvironment: DrawableDevice {
 
     /// Set ROP2.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `gen_rop2`: The ROP2 generator.
     ///
     /// # Example
@@ -192,7 +193,7 @@ pub trait GraphicsEnvironment: DrawableDevice {
 
     /// Move the current position by relative values.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `dx` - The relative x position.
     /// * `dy` - The relative y position.
     fn moverel(&mut self, dx: i32, dy: i32) {
@@ -201,7 +202,7 @@ pub trait GraphicsEnvironment: DrawableDevice {
 
     /// Move the current position to absolute values.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The absolute x position.
     /// * `y` - The absolute y position.
     fn moveto(&mut self, x: i32, y: i32) {
@@ -235,7 +236,7 @@ pub trait GraphicsEnvironment: DrawableDevice {
 
     /// Set current font.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `font` - The font to set.
     fn setfont(&mut self, font: Font) {
         let lfont = font.into();
@@ -244,7 +245,7 @@ pub trait GraphicsEnvironment: DrawableDevice {
 
     /// Get text height.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `text` - The text to measure.
     ///
     /// # Return
@@ -256,7 +257,7 @@ pub trait GraphicsEnvironment: DrawableDevice {
 
     /// Get text width.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `text` - The text to measure.
     ///
     /// # Return
@@ -268,14 +269,14 @@ pub trait GraphicsEnvironment: DrawableDevice {
 
     /// Set Text alignment.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `horiz` - The horizontal alignment.
     /// * `vert` - The vertical alignment.
     fn settextjustify(&mut self, horiz: TextHAlign, vert: TextVAlign) {
         unsafe { ege_settextjustify(horiz as i32, vert as i32, self.mut_ptr()) };
     }
 
-    /// Get Image Buffer.
+    /// Get image pixel buffer pointer.
     ///
     /// # Return
     /// Pointer to the starting position of the image data memory.
@@ -284,8 +285,18 @@ pub trait GraphicsEnvironment: DrawableDevice {
         unsafe { ege_getbuffer(self.mut_ptr()) }
     }
 
+    /// Set global alpha transparency.
     fn set_alpha(&mut self, alpha: u8) {
         unsafe { ege_ege_setalpha(alpha as _, self.mut_ptr()) };
+    }
+
+    /// Set transformation matrix.
+    ///
+    /// # Parameters
+    /// * `matrix` - The transformation matrix.
+    fn set_transform(&mut self, matrix: impl IntoEGEMatrix) {
+        let mat = matrix.into_ege_matrix();
+        unsafe { ege_ege_set_transform(&mat, self.mut_ptr()) };
     }
 }
 
@@ -317,7 +328,7 @@ pub struct Point<T = i32> {
 pub trait Draw: DrawableDevice {
     /// Get the color of the pixel at the specified position.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The x position.
     /// * `y` - The y position.
     ///
@@ -335,7 +346,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw a pixel at the specified position.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The x position.
     /// * `y` - The y position.
     /// * `color` - The color to draw.
@@ -345,7 +356,7 @@ pub trait Draw: DrawableDevice {
 
     /// Set the color of pixels while preserving the original alpha value
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The x position.
     /// * `y` - The y position.
     /// * `color` - The color to draw.
@@ -356,7 +367,7 @@ pub trait Draw: DrawableDevice {
     /// Draw pixel points
     /// Mix according to alpha, and retain the background color alpha in the mixed result.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The x position.
     /// * `y` - The y position.
     /// * `color` - The color to draw.
@@ -367,7 +378,7 @@ pub trait Draw: DrawableDevice {
     /// Draw pixel points
     /// Mix based on alpha
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The x position.
     /// * `y` - The y position.
     /// * `color` - The color to draw.
@@ -378,7 +389,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw multiple pixels
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `array` - The array of pixels to draw.
     fn putpixels<T: IntoARGB + Copy>(&mut self, array: &[PixelPoint<T>]) {
         let array = array
@@ -395,7 +406,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw a arc.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The x position of the center.
     /// * `y` - The y position of the center.
     /// * `start` - The start angle in degrees.
@@ -407,7 +418,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw a arc.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The x position of the center.
     /// * `y` - The y position of the center.
     /// * `start` - The start angle in degrees.
@@ -419,7 +430,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw a ellipse.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The x position of the center.
     /// * `y` - The y position of the center.
     /// * `start` - The start angle in degrees.
@@ -432,7 +443,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw a ellipse.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The x position of the center.
     /// * `y` - The y position of the center.
     /// * `start` - The start angle in degrees.
@@ -445,7 +456,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw a line between two points.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x1` - The x position of the first point.
     /// * `y1` - The y position of the first point.
     /// * `x2` - The x position of the second point.
@@ -456,7 +467,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw a line between current position and the specified relative coordinates.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `dx` - The relative x position.
     /// * `dy` - The relative y position.
     fn linerel(&mut self, dx: i32, dy: i32) {
@@ -465,7 +476,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw a line between current position and the specified absolute coordinates.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The absolute x position.
     /// * `y` - The absolute y position.
     fn lineto(&mut self, x: i32, y: i32) {
@@ -474,7 +485,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw multiple lines.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `lines` - The array of lines to draw.
     fn drawlines(&mut self, lines: &[Line]) {
         let lines = lines
@@ -487,7 +498,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw a polyline.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `points` - The array of points to draw.
     fn polyline(&mut self, points: &[Point]) {
         let points = points
@@ -500,7 +511,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw a polyline.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `points` - The array of points to draw.
     fn drawpoly(&mut self, points: &[Point]) {
         let points = points
@@ -513,7 +524,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw a bezier curve.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `points` - The array of control points to draw.
     fn drawbezier(&mut self, points: &[Point]) {
         let points = points
@@ -526,7 +537,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw a rectangle.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `left` - The left position of the rectangle.
     /// * `top` - The top position of the rectangle.
     /// * `right` - The right position of the rectangle.
@@ -537,7 +548,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw a fill rectangle.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `left` - The left position of the rectangle.
     /// * `top` - The top position of the rectangle.
     /// * `right` - The right position of the rectangle.
@@ -548,7 +559,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw a solid rectangle.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `left` - The left position of the rectangle.
     /// * `top` - The top position of the rectangle.
     /// * `right` - The right position of the rectangle.
@@ -559,7 +570,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw a rectangle.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `left` - The left position of the rectangle.
     /// * `top` - The top position of the rectangle.
     /// * `right` - The right position of the rectangle.
@@ -570,7 +581,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw a block.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `left` - The left position of the block.
     /// * `top` - The top position of the block.
     /// * `right` - The right position of the block.
@@ -593,7 +604,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw a polygon.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `points` - The vertices of the polygon.
     fn polygon(&mut self, points: &[Point]) {
         let points = points
@@ -606,7 +617,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw a filled polygon.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `points` - The vertices of the polygon.
     fn fillpoly(&mut self, points: &[Point]) {
         let points = points
@@ -619,7 +630,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw a solid polygon.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `points` - The vertices of the polygon.
     fn solidpoly(&mut self, points: &[Point]) {
         let points = points
@@ -632,7 +643,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw a gradient polygon.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `points` - The vertices of the polygon.
     fn fillpoly_gradient<T: IntoARGB + Copy>(&mut self, points: &[PixelPoint<T, f32>]) {
         let points = points
@@ -648,7 +659,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw a circle.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The x position of the center.
     /// * `y` - The y position of the center.
     /// * `radius` - The radius of the circle.
@@ -658,7 +669,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw a circle.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The x position of the center.
     /// * `y` - The y position of the center.
     /// * `radius` - The radius of the circle.
@@ -668,7 +679,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw a filled circle.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The x position of the center.
     /// * `y` - The y position of the center.
     /// * `radius` - The radius of the circle.
@@ -678,7 +689,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw a filled circle.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The x position of the center.
     /// * `y` - The y position of the center.
     /// * `radius` - The radius of the circle.
@@ -688,7 +699,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw a ellipse.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The x position of the center.
     /// * `y` - The y position of the center.
     /// * `rx` - The x radius of the ellipse.
@@ -699,7 +710,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw a ellipse.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The x position of the center.
     /// * `y` - The y position of the center.
     /// * `rx` - The x radius of the ellipse.
@@ -710,7 +721,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw a solid circle.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The x position of the center.
     /// * `y` - The y position of the center.
     /// * `radius` - The radius of the circle.
@@ -720,7 +731,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw a solid circle.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The x position of the center.
     /// * `y` - The y position of the center.
     /// * `radius` - The radius of the circle.
@@ -730,7 +741,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw a solid ellipse.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The x position of the center.
     /// * `y` - The y position of the center.
     /// * `rx` - The x radius of the ellipse.
@@ -741,7 +752,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw a solid ellipse.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The x position of the center.
     /// * `y` - The y position of the center.
     /// * `rx` - The x radius of the ellipse.
@@ -752,7 +763,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw a pie.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The x position of the center.
     /// * `y` - The y position of the center.
     /// * `start` - The start angle of the pie.
@@ -765,7 +776,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw a pie.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The x position of the center.
     /// * `y` - The y position of the center.
     /// * `start` - The start angle of the pie.
@@ -778,7 +789,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw a filled pie.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The x position of the center.
     /// * `y` - The y position of the center.
     /// * `start` - The start angle of the pie.
@@ -791,7 +802,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw a filled pie.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The x position of the center.
     /// * `y` - The y position of the center.
     /// * `start` - The start angle of the pie.
@@ -804,7 +815,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw a solid pie.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The x position of the center.
     /// * `y` - The y position of the center.
     /// * `start` - The start angle of the pie.
@@ -817,7 +828,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw a solid pie.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The x position of the center.
     /// * `y` - The y position of the center.
     /// * `start` - The start angle of the pie.
@@ -830,7 +841,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw a sector.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The x position of the center.
     /// * `y` - The y position of the center.
     /// * `start` - The start angle of the sector.
@@ -843,7 +854,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw a sector.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The x position of the center.
     /// * `y` - The y position of the center.
     /// * `start` - The start angle of the sector.
@@ -856,7 +867,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw a pieslice.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The x position of the center.
     /// * `y` - The y position of the center.
     /// * `start` - The start angle of the pieslice.
@@ -868,7 +879,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw a pieslice.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The x position of the center.
     /// * `y` - The y position of the center.
     /// * `start` - The start angle of the pieslice.
@@ -880,7 +891,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw a rounded rectangle.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `left` - The left position of the rectangle.
     /// * `top` - The top position of the rectangle.
     /// * `right` - The right position of the rectangle.
@@ -893,7 +904,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw a fill rounded rectangle.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `left` - The left position of the rectangle.
     /// * `top` - The top position of the rectangle.
     /// * `right` - The right position of the rectangle.
@@ -906,7 +917,7 @@ pub trait Draw: DrawableDevice {
 
     /// Draw a solid rounded rectangle.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `left` - The left position of the rectangle.
     /// * `top` - The top position of the rectangle.
     /// * `right` - The right position of the rectangle.
@@ -919,7 +930,7 @@ pub trait Draw: DrawableDevice {
 
     /// Specify the boundary color filling area.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - Fill the x-position of any point within the region.
     /// * `y` - Fill the y-position of any point within the region.
     /// * `color` - Fill the color of the boundary of the area.
@@ -931,7 +942,7 @@ pub trait Draw: DrawableDevice {
 
     /// Specify the surface color filling area.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - Fill the x-position of any point within the region.
     /// * `y` - Fill the y-position of any point within the region.
     /// * `color` - Fill the color of the surface of the area.
@@ -941,7 +952,7 @@ pub trait Draw: DrawableDevice {
 
     /// Output text at current position.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `text` - The text to output.
     fn outtext(&mut self, text: &str) {
         let text = text.encode_utf16().chain(Some(0)).collect::<Vec<u16>>();
@@ -950,7 +961,7 @@ pub trait Draw: DrawableDevice {
 
     /// Output text at specified rectangle area.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The x position of the top-left corner.
     /// * `y` - The y position of the top-left corner.
     /// * `w` - The width of the rectangle.
@@ -963,7 +974,7 @@ pub trait Draw: DrawableDevice {
 
     /// Output text at specified position `(x, y)`.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The x position.
     /// * `y` - The y position.
     /// * `text` - The text to output.
@@ -980,7 +991,7 @@ pub trait Draw: DrawableDevice {
 pub trait HighDraw: DrawableDevice {
     /// Enable anti aliasing.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `enable` - Whether to enable anti aliasing.
     fn enable_aa(&mut self, enable: bool) {
         unsafe { ege_ege_enable_aa(enable as _, self.mut_ptr()) };
@@ -988,7 +999,7 @@ pub trait HighDraw: DrawableDevice {
 
     /// Draw a line.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x1` - The x position of the start point.
     /// * `y1` - The y position of the start point.
     /// * `x2` - The x position of the end point.
@@ -999,7 +1010,7 @@ pub trait HighDraw: DrawableDevice {
 
     /// Draw a rectangle.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The x position of the top-left corner.
     /// * `y` - The y position of the top-left corner.
     /// * `w` - The width of the rectangle.
@@ -1010,7 +1021,7 @@ pub trait HighDraw: DrawableDevice {
 
     /// Draw a rounded rectangle.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The x position of the top-left corner.
     /// * `y` - The y position of the top-left corner.
     /// * `w` - The width of the rectangle.
@@ -1022,7 +1033,7 @@ pub trait HighDraw: DrawableDevice {
 
     /// Draw a rounded rectangle with different radii for each corner.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The x position of the top-left corner.
     /// * `y` - The y position of the top-left corner.
     /// * `w` - The width of the rectangle.
@@ -1047,7 +1058,7 @@ pub trait HighDraw: DrawableDevice {
 
     /// Draw an arc.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The x position of the center.
     /// * `y` - The y position of the center.
     /// * `w` - The width of the arc.
@@ -1060,7 +1071,7 @@ pub trait HighDraw: DrawableDevice {
 
     /// Draw an ellipse.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The x position of the center.
     /// * `y` - The y position of the center.
     /// * `w` - The width of the ellipse.
@@ -1071,7 +1082,7 @@ pub trait HighDraw: DrawableDevice {
 
     /// Draw a pie.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The x position of the center.
     /// * `y` - The y position of the center.
     /// * `w` - The width of the pie.
@@ -1084,7 +1095,7 @@ pub trait HighDraw: DrawableDevice {
 
     /// Draw a polyline.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `points` - The points of the polyline.
     fn drawpoly(&mut self, points: &[Point<f32>]) {
         let points = points
@@ -1096,7 +1107,7 @@ pub trait HighDraw: DrawableDevice {
 
     /// Draw a bezier curve.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `points` - The control points of the bezier curve.
     fn bezier(&mut self, points: &[Point<f32>]) {
         let points = points
@@ -1108,7 +1119,7 @@ pub trait HighDraw: DrawableDevice {
 
     /// Draw a curve.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `points` - The control points of the curve.
     /// * `tension` - The tension of the curve.
     fn drawcurve(&mut self, points: &[Point<f32>], tension: f32) {
@@ -1121,7 +1132,7 @@ pub trait HighDraw: DrawableDevice {
 
     /// Draw a closed curve.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `points` - The control points of the curve.
     /// * `tension` - The tension of the curve.
     fn drawclosedcurve(&mut self, points: &[Point<f32>], tension: f32) {
@@ -1136,7 +1147,7 @@ pub trait HighDraw: DrawableDevice {
 
     /// Draw a fill rectangle.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The x position of the top-left corner.
     /// * `y` - The y position of the top-left corner.
     /// * `w` - The width of the rectangle.
@@ -1147,7 +1158,7 @@ pub trait HighDraw: DrawableDevice {
 
     /// Draw a fill rounded rectangle.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The x position of the top-left corner.
     /// * `y` - The y position of the top-left corner.
     /// * `w` - The width of the rectangle.
@@ -1159,7 +1170,7 @@ pub trait HighDraw: DrawableDevice {
 
     /// Draw a filled polygon.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `points` - The vertices of the polygon.
     fn fillpoly(&mut self, points: &[Point<f32>]) {
         let points = points
@@ -1171,7 +1182,7 @@ pub trait HighDraw: DrawableDevice {
 
     /// Draw a filled pie.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The x position of the center.
     /// * `y` - The y position of the center.
     /// * `w` - The width of the pie.
@@ -1184,7 +1195,7 @@ pub trait HighDraw: DrawableDevice {
 
     /// Draw a filled ellipse.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The x position of the center.
     /// * `y` - The y position of the center.
     /// * `w` - The width of the ellipse.
@@ -1195,7 +1206,7 @@ pub trait HighDraw: DrawableDevice {
 
     /// Draw a filled bezier curve.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `points` - The control points of the bezier curve.
     /// * `tension` - The tension of the curve.
     fn fillclosedcurve(&mut self, points: &[Point<f32>], tension: f32) {
@@ -1210,13 +1221,29 @@ pub trait HighDraw: DrawableDevice {
 
     /// Output text at position `(x, y)`.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `x` - The x position.
     /// * `y` - The y position.
     /// * `text` - The text to output.
     fn outtextxy(&mut self, x: f32, y: f32, text: &str) {
         let text = text.encode_utf16().chain(Some(0)).collect::<Vec<u16>>();
         unsafe { ege_ege_outtextxy1(x, y, text.as_ptr(), self.mut_ptr()) };
+    }
+
+    fn drawpath(&mut self, path: &Path) {
+        unsafe { ege_ege_drawpath(path.ptr, self.mut_ptr()) };
+    }
+
+    fn drawpath_at(&mut self, path: &Path, x: f32, y: f32) {
+        unsafe { ege_ege_drawpath1(path.ptr, x, y, self.mut_ptr()) };
+    }
+
+    fn fillpath(&mut self, path: &Path) {
+        unsafe { ege_ege_fillpath(path.ptr, self.mut_ptr()) };
+    }
+
+    fn fillpath_at(&mut self, path: &Path, x: f32, y: f32) {
+        unsafe { ege_ege_fillpath1(path.ptr, x, y, self.mut_ptr()) };
     }
 }
 
@@ -1235,7 +1262,7 @@ pub struct Rect<T = i32> {
 pub trait ImageDraw: DrawableDevice {
     /// Draw an image.
     ///
-    /// # Arguments
+    /// # Parameters
     /// * `image` - The image to draw.
     /// * `x` - The x position of the top-left corner.
     /// * `y` - The y position of the top-left corner.
@@ -1247,7 +1274,7 @@ pub trait ImageDraw: DrawableDevice {
     ///     - `Src` mask.
     ///     - `Dst` mask.
     ///
-    /// For example, the `DPo` is `|P, S, D| D | P`, the `DPSoo` is `|P, S, D| (S | P) | D`, and so on.
+    /// For example, the `DPo` is `|P, S, D| D | P`, the `DPSao` is `|P, S, D| (S & P) | D`, and so on.
     fn putimage(&mut self, x: i32, y: i32, image: &Image, gen_rop3: impl Fn(u32, u32, u32) -> u32) {
         if self.mut_ptr().is_null() {
             unsafe { ege_putimage(x, y, image.const_ptr(), rop3(gen_rop3)) };
@@ -1256,6 +1283,14 @@ pub trait ImageDraw: DrawableDevice {
         }
     }
 
+    /// Draw an image with a specified size.
+    ///
+    /// # Parameters
+    /// * `dest` - The destination rectangle.
+    /// * `image` - The image to draw.
+    /// * `x_src` - The x position of the top-left corner of the source image.
+    /// * `y_src` - The y position of the top-left corner of the source image.
+    /// * `gen_rop3` - A function to generate the ROP3 code.
     fn putimage_with_size(
         &mut self,
         dest: Rect,
@@ -1294,6 +1329,13 @@ pub trait ImageDraw: DrawableDevice {
         }
     }
 
+    /// Draw an image with a specified scale.
+    ///
+    /// # Parameters
+    /// * `dest` - The destination rectangle.
+    /// * `image` - The image to draw.
+    /// * `src` - The source rectangle.
+    /// * `gen_rop3` - A function to generate the ROP3 code.
     fn putimage_with_scale(
         &mut self,
         dest: Rect,
@@ -1335,6 +1377,13 @@ pub trait ImageDraw: DrawableDevice {
         }
     }
 
+    /// Draw an image with alpha.
+    ///
+    /// # Parameters
+    /// * `image` - The image to draw.
+    /// * `dest` - The destination rectangle.
+    /// * `src` - The source rectangle.
+    /// * `smooth` - Whether to use smooth scaling.
     fn putimage_with_alpha(
         &mut self,
         image: &Image,
@@ -1360,6 +1409,15 @@ pub trait ImageDraw: DrawableDevice {
         Image::handle_result(result)
     }
 
+    /// Draw an image with alpha blending and a specified alpha type.
+    ///
+    /// # Parameters
+    /// * `image` - The image to draw.
+    /// * `dest` - The destination rectangle.
+    /// * `alpha` - The alpha value.
+    /// * `src` - The source rectangle.
+    /// * `smooth` - Whether to use smooth scaling.
+    /// * `alpha_type` - The alpha type.
     fn putimage_alphablender(
         &mut self,
         image: &Image,
@@ -1389,6 +1447,14 @@ pub trait ImageDraw: DrawableDevice {
         Image::handle_result(result)
     }
 
+    /// Draw an image with alpha blending and a specified alpha type.
+    ///
+    /// # Parameters
+    /// * `image` - The image to draw.
+    /// * `x_dest` - The x position of the top-left corner of the destination image.
+    /// * `y_dest` - The y position of the top-left corner of the destination image.
+    /// * `alpha` - The alpha image.
+    /// * `src` - The source rectangle.
     fn putimage_alphafilter(
         &mut self,
         image: &Image,
@@ -1413,6 +1479,14 @@ pub trait ImageDraw: DrawableDevice {
         Image::handle_result(result)
     }
 
+    /// Draw an image with alpha blending and a specified alpha type.
+    ///
+    /// # Parameters
+    /// * `image` - The image to draw.
+    /// * `x_dest` - The x position of the top-left corner of the destination image.
+    /// * `y_dest` - The y position of the top-left corner of the destination image.
+    /// * `transparent` - The alpha image.
+    /// * `src` - The source rectangle.
     fn putimage_transparent(
         &mut self,
         image: &Image,
@@ -1587,6 +1661,27 @@ pub trait ImageDraw: DrawableDevice {
             )
         };
         Image::handle_result(result)
+    }
+
+    fn drawimage(&mut self, image: &Image, x: i32, y: i32) {
+        unsafe { ege_ege_drawimage(image.const_ptr(), x, y, self.mut_ptr()) };
+    }
+
+    fn drawimage_with_scale(&mut self, image: &Image, dest: Rect, src: Rect) {
+        unsafe {
+            ege_ege_drawimage1(
+                image.const_ptr(),
+                dest.x,
+                dest.y,
+                dest.width,
+                dest.height,
+                src.x,
+                src.y,
+                src.width,
+                src.height,
+                self.mut_ptr(),
+            )
+        };
     }
 }
 

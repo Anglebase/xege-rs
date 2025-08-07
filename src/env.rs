@@ -55,7 +55,7 @@ const INIT_FLAG: Mutex<bool> = Mutex::new(false);
 
 /// Initializes the graphics environment.
 ///
-/// # Arguments
+/// # Parameters
 /// * `width` - The width of the window.
 /// * `height` - The height of the window.
 /// * `mode` - The initialization mode. See `Init` for more information.
@@ -108,7 +108,7 @@ impl XEGE {
 
     /// Sets the window caption.
     /// 
-    /// # Arguments
+    /// # Parameters
     /// * `caption` - The caption of the window.
     /// 
     /// # Note
