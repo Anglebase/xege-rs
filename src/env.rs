@@ -1,6 +1,8 @@
+use std::ptr::null;
 use std::{ptr::null_mut, sync::Mutex};
 use xege_ffi::*;
 
+use crate::graphics::DrawableDevice;
 use crate::window::Window;
 
 /// The initialization options.
@@ -38,7 +40,7 @@ pub enum Init {
 
 #[allow(dead_code)]
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct XEGE{
+pub struct XEGE {
     pub window: Window,
 }
 
@@ -72,7 +74,7 @@ pub fn initgraph(width: i32, height: i32, mode: Init) -> Result<XEGE, XEGEError>
     unsafe {
         ege_initgraph(width, height, mode.bits | ege_initmode_flag_INIT_UNICODE);
     }
-    Ok(XEGE{
+    Ok(XEGE {
         window: Window(null_mut()),
     })
 }
@@ -118,5 +120,15 @@ impl XEGE {
     /// You can manipulate windows through the WIN32 API.
     pub fn hwnd(&self) -> HWND {
         unsafe { ege_getHWnd() }
+    }
+}
+
+impl DrawableDevice for XEGE {
+    fn mut_ptr(&mut self) -> *mut ege_IMAGE {
+        null_mut()
+    }
+
+    fn const_ptr(&self) -> *const ege_IMAGE {
+        null()
     }
 }
