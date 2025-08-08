@@ -555,6 +555,8 @@ pub trait Draw: DrawableDevice {
     /// # Parameters
     /// * `points` - The array of points to draw.
     fn polyline(&mut self, points: &[Point]) {
+        #[cfg(debug_assertions)]
+        assert!(points.len() >= 2);
         let points = points
             .into_iter()
             .map(|&Point { x, y }| [x, y])
@@ -568,6 +570,8 @@ pub trait Draw: DrawableDevice {
     /// # Parameters
     /// * `points` - The array of points to draw.
     fn drawpoly(&mut self, points: &[Point]) {
+        #[cfg(debug_assertions)]
+        assert!(points.len() >= 2);
         let points = points
             .into_iter()
             .map(|&Point { x, y }| [x, y])
@@ -581,6 +585,8 @@ pub trait Draw: DrawableDevice {
     /// # Parameters
     /// * `points` - The array of control points to draw.
     fn drawbezier(&mut self, points: &[Point]) {
+        #[cfg(debug_assertions)]
+        assert!(points.len() >= 4 && points.len() % 3 == 1);
         let points = points
             .into_iter()
             .map(|&Point { x, y }| [x, y])
@@ -661,6 +667,8 @@ pub trait Draw: DrawableDevice {
     /// # Parameters
     /// * `points` - The vertices of the polygon.
     fn polygon(&mut self, points: &[Point]) {
+        #[cfg(debug_assertions)]
+        assert!(points.len() >= 3);
         let points = points
             .into_iter()
             .map(|&Point { x, y }| [x, y])
@@ -674,6 +682,8 @@ pub trait Draw: DrawableDevice {
     /// # Parameters
     /// * `points` - The vertices of the polygon.
     fn fillpoly(&mut self, points: &[Point]) {
+        #[cfg(debug_assertions)]
+        assert!(points.len() >= 3);
         let points = points
             .into_iter()
             .map(|&Point { x, y }| [x, y])
@@ -687,6 +697,8 @@ pub trait Draw: DrawableDevice {
     /// # Parameters
     /// * `points` - The vertices of the polygon.
     fn solidpoly(&mut self, points: &[Point]) {
+        #[cfg(debug_assertions)]
+        assert!(points.len() >= 3);
         let points = points
             .into_iter()
             .map(|&Point { x, y }| [x, y])
@@ -700,6 +712,8 @@ pub trait Draw: DrawableDevice {
     /// # Parameters
     /// * `points` - The vertices of the polygon.
     fn fillpoly_gradient<T: IntoARGB + Copy>(&mut self, points: &[PixelPoint<T, f32>]) {
+        #[cfg(debug_assertions)]
+        assert!(points.len() >= 3);
         let points = points
             .into_iter()
             .map(|&PixelPoint { x, y, color }| ege_ege_colpoint {
@@ -1152,6 +1166,8 @@ pub trait HighDraw: DrawableDevice {
     /// # Parameters
     /// * `points` - The points of the polyline.
     fn drawpoly(&mut self, points: &[Point<f32>]) {
+        #[cfg(debug_assertions)]
+        assert!(points.len() >= 2);
         let points = points
             .into_iter()
             .map(|&Point { x, y }| ege_ege_point { x, y })
@@ -1164,6 +1180,8 @@ pub trait HighDraw: DrawableDevice {
     /// # Parameters
     /// * `points` - The control points of the bezier curve.
     fn bezier(&mut self, points: &[Point<f32>]) {
+        #[cfg(debug_assertions)]
+        assert!(points.len() >= 4 && points.len() % 3 == 1);
         let points = points
             .into_iter()
             .map(|&Point { x, y }| ege_ege_point { x, y })
@@ -1177,6 +1195,8 @@ pub trait HighDraw: DrawableDevice {
     /// * `points` - The control points of the curve.
     /// * `tension` - The tension of the curve.
     fn drawcurve(&mut self, points: &[Point<f32>], tension: f32) {
+        #[cfg(debug_assertions)]
+        assert!(points.len() >= 2);
         let points = points
             .into_iter()
             .map(|&Point { x, y }| ege_ege_point { x, y })
@@ -1190,6 +1210,8 @@ pub trait HighDraw: DrawableDevice {
     /// * `points` - The control points of the curve.
     /// * `tension` - The tension of the curve.
     fn drawclosedcurve(&mut self, points: &[Point<f32>], tension: f32) {
+        #[cfg(debug_assertions)]
+        assert!(points.len() >= 3);
         let points = points
             .into_iter()
             .map(|&Point { x, y }| ege_ege_point { x, y })
@@ -1227,6 +1249,8 @@ pub trait HighDraw: DrawableDevice {
     /// # Parameters
     /// * `points` - The vertices of the polygon.
     fn fillpoly(&mut self, points: &[Point<f32>]) {
+        #[cfg(debug_assertions)]
+        assert!(points.len() >= 3);
         let points = points
             .into_iter()
             .map(|&Point { x, y }| ege_ege_point { x, y })
@@ -1264,6 +1288,8 @@ pub trait HighDraw: DrawableDevice {
     /// * `points` - The control points of the bezier curve.
     /// * `tension` - The tension of the curve.
     fn fillclosedcurve(&mut self, points: &[Point<f32>], tension: f32) {
+        #[cfg(debug_assertions)]
+        assert!(points.len() >= 3);
         let points = points
             .into_iter()
             .map(|&Point { x, y }| ege_ege_point { x, y })
