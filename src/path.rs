@@ -39,12 +39,12 @@ pub enum PathFillMode {
     Alternate = ege_fill_mode_FILLMODE_ALTERNATE,
 }
 
-#[bitmask_enum::bitmask]
+#[bitmask_enum::bitmask(i32)]
 pub enum FontStyle {
-    Black,
-    Underline,
-    Italic,
-    StrikeOut,
+    Black = ege_font_styles_FONTSTYLE_BOLD,
+    Underline = ege_font_styles_FONTSTYLE_UNDERLINE,
+    Italic = ege_font_styles_FONTSTYLE_ITALIC,
+    StrikeOut = ege_font_styles_FONTSTYLE_STRIKEOUT,
 }
 
 impl Path {
