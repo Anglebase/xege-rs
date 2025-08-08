@@ -37,6 +37,9 @@ pub enum Init {
     WithLogo = ege_initmode_flag_INIT_WITHLOGO,
     /// Animation mode. Equivalent to `Init::RenderManual | Init::NoForceExit`
     Animation = ege_initmode_flag_INIT_ANIMATION,
+
+    /// Disable DPI scaling of the system.
+    NoSysDPI = 0x200,
 }
 
 /// Graphics environment.
@@ -74,6 +77,9 @@ pub fn initgraph(width: i32, height: i32, mode: Init) -> Result<XEGE, XEGEError>
         *lock = true;
     }
     unsafe {
+        if mode.contains(Init::NoSysDPI) {
+            SetProcessDPIAware();
+        }
         ege_initgraph(width, height, mode.bits | ege_initmode_flag_INIT_UNICODE);
     }
     Ok(XEGE {
@@ -132,7 +138,7 @@ impl XEGE {
     }
 
     /// Set render mode
-    /// 
+    ///
     /// # Parameters
     /// * `mode` - The render mode.
     pub fn setrendermode(mode: RenderMode) {
