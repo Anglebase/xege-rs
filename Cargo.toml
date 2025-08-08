@@ -2,6 +2,10 @@
 name = "xege"
 version = "0.1.0"
 edition = "2024"
+categories = ["external-ffi-bindings", "game-development", "graphics", "gui", "rendering::graphics-api"]
+license = "MIT"
+repository = "https://github.com/Anglebase/xege-rs.git"
+homepage = "https://xege.org"
 
 [dependencies]
 xege-ffi = "0.1.1"
