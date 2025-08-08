@@ -1,6 +1,7 @@
-use std::cell::RefCell;
 use std::ptr::null;
 use std::ptr::null_mut;
+use std::sync::Arc;
+use std::sync::Mutex;
 use xege_ffi::*;
 
 use crate::RenderMode;
@@ -55,8 +56,8 @@ pub enum XEGEError {
     Initialized,
 }
 
-thread_local! {
-    pub(crate) static INIT_FLAG: RefCell<bool> = RefCell::new(false);
+lazy_static::lazy_static! {
+    static ref INIT_FLAG: Arc<Mutex<bool>> = Arc::new(Mutex::new(false));
 }
 
 /// Initializes the graphics environment.
@@ -71,10 +72,11 @@ thread_local! {
 /// Returns an error if XEGE is already initialized.
 pub fn initgraph(width: i32, height: i32, mode: Init) -> Result<XEGE, XEGEError> {
     {
-        if INIT_FLAG.with_borrow(|f| *f) {
+        let mut flag = INIT_FLAG.lock().unwrap();
+        if *flag {
             return Err(XEGEError::Initialized);
         }
-        INIT_FLAG.with_borrow_mut(|f| *f = true);
+        *flag = true;
     }
     unsafe {
         if mode.contains(Init::NoSysDPI) {
@@ -90,7 +92,8 @@ pub fn initgraph(width: i32, height: i32, mode: Init) -> Result<XEGE, XEGEError>
 impl Drop for XEGE {
     fn drop(&mut self) {
         {
-            INIT_FLAG.with_borrow_mut(|f| *f = false);
+            let mut flag = INIT_FLAG.lock().unwrap();
+            *flag = false;
         }
         unsafe { ege_closegraph() };
     }
