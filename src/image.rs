@@ -1,7 +1,7 @@
 use std::fmt::Display;
 use xege_ffi::*;
 
-use crate::DrawableDevice;
+use crate::{DrawableDevice, GraphicsEnvironment, ImageDraw};
 
 #[derive(Debug, thiserror::Error)]
 pub enum ImageError {
@@ -171,5 +171,13 @@ impl Image {
     pub unsafe fn resize_f(&mut self, width: i32, height: i32) -> Result<(), ImageError> {
         let result = unsafe { ege_resize_f(self.ptr, width, height) };
         Self::handle_result(result)
+    }
+}
+
+impl Clone for Image {
+    fn clone(&self) -> Self {
+        let mut img = Image::new(self.getwidth(), self.getheight());
+        img.drawimage(self, 0, 0);
+        img
     }
 }

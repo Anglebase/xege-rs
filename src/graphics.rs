@@ -60,12 +60,7 @@ pub trait GraphicsEnvironment: DrawableDevice {
     /// The color of the background.
     fn getbkcolor(&self) -> Color {
         let argb = unsafe { ege_getbkcolor(self.const_ptr()) };
-        Color::new(
-            ((argb >> 16) & 0xff) as _,
-            ((argb >> 8) & 0xff) as _,
-            ((argb) & 0xff) as _,
-            ((argb >> 24) & 0xff) as _,
-        )
+        Color::from_argb(argb)
     }
 
     /// Set current line color.
@@ -104,12 +99,7 @@ pub trait GraphicsEnvironment: DrawableDevice {
     /// The color of the environment.
     fn getcolor(&self) -> Color {
         let argb = unsafe { ege_getcolor(self.const_ptr()) };
-        Color::new(
-            ((argb >> 16) & 0xff) as _,
-            ((argb >> 8) & 0xff) as _,
-            ((argb) & 0xff) as _,
-            ((argb >> 24) & 0xff) as _,
-        )
+        Color::from_argb(argb)
     }
 
     /// Get current text color.
@@ -118,12 +108,7 @@ pub trait GraphicsEnvironment: DrawableDevice {
     /// The color of the text.
     fn gettextcolor(&self) -> Color {
         let argb = unsafe { ege_gettextcolor(self.const_ptr()) };
-        Color::new(
-            ((argb >> 16) & 0xff) as _,
-            ((argb >> 8) & 0xff) as _,
-            ((argb) & 0xff) as _,
-            ((argb >> 24) & 0xff) as _,
-        )
+        Color::from_argb(argb)
     }
 
     /// Set current text color.
@@ -174,12 +159,7 @@ pub trait GraphicsEnvironment: DrawableDevice {
     /// The color of the fill.
     fn getfillcolor(&self) -> Color {
         let argb = unsafe { ege_getfillcolor(self.const_ptr()) };
-        Color::new(
-            ((argb >> 16) & 0xff) as _,
-            ((argb >> 8) & 0xff) as _,
-            ((argb) & 0xff) as _,
-            ((argb >> 24) & 0xff) as _,
-        )
+        Color::from_argb(argb)
     }
 
     /// Get current line style.
@@ -421,12 +401,7 @@ pub trait Draw: DrawableDevice {
     /// The color of the pixel.
     fn getpixel(&self, x: i32, y: i32) -> Color {
         let argb = unsafe { ege_getpixel(x, y, self.const_ptr()) };
-        Color::new(
-            ((argb >> 16) & 0xff) as _,
-            ((argb >> 8) & 0xff) as _,
-            ((argb) & 0xff) as _,
-            ((argb >> 24) & 0xff) as _,
-        )
+        Color::from_argb(argb)
     }
 
     /// Draw a pixel at the specified position.
