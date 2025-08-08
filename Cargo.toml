@@ -7,5 +7,5 @@ edition = "2024"
 xege-ffi = "0.1.1"
 thiserror = "2.0.12"
 bitmask-enum = "2.2.5"
-palette = "0.7.6"
+palette = { version = "0.7.6", features = ["named"] }
 mats = "0.2.0"

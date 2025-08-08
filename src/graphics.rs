@@ -99,6 +99,13 @@ pub trait GraphicsEnvironment: DrawableDevice {
     /// # Parameters
     /// * `gen_rop2`: The ROP2 generator.
     ///
+    /// # Note
+    /// The `gen_rop2` accepts two `u8`:
+    ///     - `Pen`: current pen color.
+    ///     - `Dst`: Screen color.
+    ///
+    /// * This function only valid for trait `Draw`.
+    ///
     /// # Example
     ///
     /// ```rust
@@ -109,7 +116,8 @@ pub trait GraphicsEnvironment: DrawableDevice {
     /// xege.setwritemode(|pen, dst| pen & dst);
     /// ```
     fn setwritemode(&mut self, gen_rop2: impl Fn(u8, u8) -> u8) {
-        unsafe { ege_setwritemode(gen_rop2(0b1100, 0b1010) as _, self.mut_ptr()) };
+        let mask = gen_rop2(0b1100, 0b1010) + 1;
+        unsafe { ege_setwritemode(mask as _, self.mut_ptr()) };
     }
 
     /// Get current fill color.

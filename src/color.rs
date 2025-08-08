@@ -13,3 +13,14 @@ impl IntoARGB for Color {
             | (self.blue as u32)
     }
 }
+
+impl IntoARGB for palette::rgb::Srgb<u8> {
+    fn into_argb(&self) -> u32 {
+        ((255u32) << 24)
+            | ((self.red as u32) << 16)
+            | ((self.green as u32) << 8)
+            | (self.blue as u32)
+    }
+}
+
+pub use palette::named::*;
