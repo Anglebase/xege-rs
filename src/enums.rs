@@ -1021,10 +1021,19 @@ impl Into<u32> for Key {
 }
 
 #[repr(i32)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub enum RenderMode {
     /// Automatic rendering
+    #[default]
     Auto = ege_rendermode_e_RENDER_AUTO,
     /// Manual rendering
     Manual = ege_rendermode_e_RENDER_MANUAL,
+}
+
+#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+pub enum BkMode {
+    #[default]
+    Opaque = xege_ffi::OPAQUE,
+    Transparent = xege_ffi::TRANSPARENT,
 }

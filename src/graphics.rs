@@ -38,6 +38,24 @@ pub trait GraphicsEnvironment: DrawableDevice {
         unsafe { ege_setcolor(color.into_argb(), self.mut_ptr()) };
     }
 
+    fn setbkcolor(&mut self, color: impl IntoARGB) {
+        unsafe { ege_setbkcolor(color.into_argb(), self.mut_ptr()) };
+    }
+
+    fn setbkmode(&mut self, mode: BkMode) {
+        unsafe { ege_setbkmode(mode as i32, self.mut_ptr()) };
+    }
+
+    fn getbkcolor(&self) -> Color {
+        let argb = unsafe { ege_getbkcolor(self.const_ptr()) };
+        Color::new(
+            ((argb >> 16) & 0xff) as _,
+            ((argb >> 8) & 0xff) as _,
+            ((argb) & 0xff) as _,
+            ((argb >> 24) & 0xff) as _,
+        )
+    }
+
     /// Set current line color.
     ///
     /// # Parameters
@@ -68,6 +86,34 @@ pub trait GraphicsEnvironment: DrawableDevice {
         }
     }
 
+    fn getcolor(&self) -> Color {
+        let argb = unsafe { ege_getcolor(self.const_ptr()) };
+        Color::new(
+            ((argb >> 16) & 0xff) as _,
+            ((argb >> 8) & 0xff) as _,
+            ((argb) & 0xff) as _,
+            ((argb >> 24) & 0xff) as _,
+        )
+    }
+
+    fn gettextcolor(&self) -> Color {
+        let argb = unsafe { ege_gettextcolor(self.const_ptr()) };
+        Color::new(
+            ((argb >> 16) & 0xff) as _,
+            ((argb >> 8) & 0xff) as _,
+            ((argb) & 0xff) as _,
+            ((argb >> 24) & 0xff) as _,
+        )
+    }
+
+    fn settextcolor(&mut self, color: impl IntoARGB) {
+        unsafe { ege_settextcolor(color.into_argb(), self.mut_ptr()) };
+    }
+
+    fn setfontbkcolor(&mut self, color: impl IntoARGB) {
+        unsafe { ege_setfontbkcolor(color.into_argb(), self.mut_ptr()) };
+    }
+
     /// Set current line cap.
     ///
     /// # Parameters
@@ -92,32 +138,6 @@ pub trait GraphicsEnvironment: DrawableDevice {
     /// * `width` - The width to set.
     fn setlinewidth(&mut self, width: f32) {
         unsafe { ege_setlinewidth(width, self.mut_ptr()) };
-    }
-
-    /// Set ROP2.
-    ///
-    /// # Parameters
-    /// * `gen_rop2`: The ROP2 generator.
-    ///
-    /// # Note
-    /// The `gen_rop2` accepts two `u8`:
-    ///     - `Pen`: current pen color.
-    ///     - `Dst`: Screen color.
-    ///
-    /// * This function only valid for trait `Draw`.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use xege::*;
-    ///
-    /// let mut xege = initgraph(640, 480, Init::Default).unwarp();
-    /// // DPan
-    /// xege.setwritemode(|pen, dst| pen & dst);
-    /// ```
-    fn setwritemode(&mut self, gen_rop2: impl Fn(u8, u8) -> u8) {
-        let mask = gen_rop2(0b1100, 0b1010) + 1;
-        unsafe { ege_setwritemode(mask as _, self.mut_ptr()) };
     }
 
     /// Get current fill color.
@@ -334,6 +354,32 @@ pub struct Point<T = i32> {
 /// # Note
 /// They do not support anti aliasing and transparent channels.
 pub trait Draw: DrawableDevice {
+    /// Set ROP2.
+    ///
+    /// # Parameters
+    /// * `gen_rop2`: The ROP2 generator.
+    ///
+    /// # Note
+    /// The `gen_rop2` accepts two `u8`:
+    ///     - `Pen`: current pen color.
+    ///     - `Dst`: Screen color.
+    ///
+    /// * This function only valid for trait `Draw`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use xege::*;
+    ///
+    /// let mut xege = initgraph(640, 480, Init::Default).unwarp();
+    /// // DPan
+    /// xege.setwritemode(|pen, dst| pen & dst);
+    /// ```
+    fn setwritemode(&mut self, gen_rop2: impl Fn(u8, u8) -> u8) {
+        let mask = gen_rop2(0b1100, 0b1010) + 1;
+        unsafe { ege_setwritemode(mask as _, self.mut_ptr()) };
+    }
+
     /// Get the color of the pixel at the specified position.
     ///
     /// # Parameters
