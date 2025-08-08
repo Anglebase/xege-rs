@@ -2,6 +2,7 @@ use std::ptr::null;
 use std::{ptr::null_mut, sync::Mutex};
 use xege_ffi::*;
 
+use crate::RenderMode;
 use crate::graphics::DrawableDevice;
 use crate::window::Window;
 
@@ -107,10 +108,10 @@ impl XEGE {
     }
 
     /// Sets the window caption.
-    /// 
+    ///
     /// # Parameters
     /// * `caption` - The caption of the window.
-    /// 
+    ///
     /// # Note
     /// The caption is displayed in the title bar of the window.
     pub fn set_caption(&mut self, caption: &str) {
@@ -128,6 +129,14 @@ impl XEGE {
     /// You can manipulate windows through the WIN32 API.
     pub fn hwnd(&self) -> HWND {
         unsafe { ege_getHWnd() }
+    }
+
+    /// Set render mode
+    /// 
+    /// # Parameters
+    /// * `mode` - The render mode.
+    pub fn setrendermode(mode: RenderMode) {
+        unsafe { ege_setrendermode(mode as i32) };
     }
 }
 

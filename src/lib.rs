@@ -7,6 +7,8 @@ mod image;
 pub mod mat;
 mod path;
 mod msg;
+mod time;
+mod console;
 
 pub use env::*;
 pub use window::*;
@@ -16,3 +18,5 @@ pub use enums::*;
 pub use image::*;
 pub use path::*;
 pub use msg::*;
+pub use time::*;
+pub use console::*;

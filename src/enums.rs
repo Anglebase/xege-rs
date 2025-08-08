@@ -1019,3 +1019,12 @@ impl Into<u32> for Key {
         key_to_vk(self)
     }
 }
+
+#[repr(i32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RenderMode {
+    /// Automatic rendering
+    Auto = ege_rendermode_e_RENDER_AUTO,
+    /// Manual rendering
+    Manual = ege_rendermode_e_RENDER_MANUAL,
+}
