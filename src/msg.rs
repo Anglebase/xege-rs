@@ -9,12 +9,14 @@ pub enum KeyFlags {
     First,
 }
 
+#[derive(Debug)]
 pub enum KeyMsg {
     Down(Key),
     Up(Key),
     Char(char),
 }
 
+#[derive(Debug)]
 pub struct MouseMsg {
     pub(crate) msg: ege_mouse_msg,
 }

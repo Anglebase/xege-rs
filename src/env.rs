@@ -43,7 +43,6 @@ pub enum Init {
 }
 
 /// Graphics environment.
-#[allow(dead_code)]
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct XEGE {
     pub window: Window,

@@ -48,9 +48,9 @@ impl Window {
         unsafe { ege_keystate(<Key as Into<u32>>::into(key) as i32) }
     }
 
-    pub fn getchar(&self) -> Option<i32> {
+    pub fn getchar(&self) -> Option<char> {
         if unsafe { ege_kbhit() != 0 } {
-            Some(unsafe { ege_getch() })
+            char::from_u32(unsafe { ege_getch() as u32 })
         } else {
             None
         }
