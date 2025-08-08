@@ -6,6 +6,7 @@ categories = ["external-ffi-bindings", "game-development", "graphics", "gui", "r
 license = "MIT"
 repository = "https://github.com/Anglebase/xege-rs.git"
 homepage = "https://xege.org"
+description = "Rust style safe warpper of C++ graphics libraries."
 
 [dependencies]
 xege-ffi = "0.1.1"
