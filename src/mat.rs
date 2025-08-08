@@ -1,6 +1,8 @@
+// re-exported
 pub use mats::*;
 use xege_ffi::*;
 
+/// A trait for converting a other format matrix into an EGE matrix.
 pub trait IntoEGEMatrix {
     fn into_ege_matrix(&self) -> ege_ege_transform_matrix;
 }

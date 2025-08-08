@@ -1,6 +1,7 @@
 /// Color
 pub type Color = palette::Srgba<u8>;
 
+/// This trait is the interface between other color formats and the EGE used color format(`u32`, ARGB).
 pub trait IntoARGB {
     fn into_argb(&self) -> u32;
 }
@@ -23,4 +24,5 @@ impl IntoARGB for palette::rgb::Srgb<u8> {
     }
 }
 
+// re-exporting palette's named colors
 pub use palette::named::*;

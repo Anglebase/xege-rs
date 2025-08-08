@@ -38,14 +38,26 @@ pub trait GraphicsEnvironment: DrawableDevice {
         unsafe { ege_setcolor(color.into_argb(), self.mut_ptr()) };
     }
 
+    /// Set current background color.
+    /// 
+    /// # Parameters
+    /// * `color` - The color to set.
     fn setbkcolor(&mut self, color: impl IntoARGB) {
         unsafe { ege_setbkcolor(color.into_argb(), self.mut_ptr()) };
     }
 
+    /// Set current background mode.
+    /// 
+    /// # Parameters
+    /// * `mode` - The mode to set.
     fn setbkmode(&mut self, mode: BkMode) {
         unsafe { ege_setbkmode(mode as i32, self.mut_ptr()) };
     }
 
+    /// Get current background color.
+    /// 
+    /// # Return
+    /// The color of the background.
     fn getbkcolor(&self) -> Color {
         let argb = unsafe { ege_getbkcolor(self.const_ptr()) };
         Color::new(
@@ -86,6 +98,10 @@ pub trait GraphicsEnvironment: DrawableDevice {
         }
     }
 
+    /// Get current color.
+    /// 
+    /// # Return
+    /// The color of the environment.
     fn getcolor(&self) -> Color {
         let argb = unsafe { ege_getcolor(self.const_ptr()) };
         Color::new(
@@ -96,6 +112,10 @@ pub trait GraphicsEnvironment: DrawableDevice {
         )
     }
 
+    /// Get current text color.
+    ///
+    /// # Return
+    /// The color of the text.
     fn gettextcolor(&self) -> Color {
         let argb = unsafe { ege_gettextcolor(self.const_ptr()) };
         Color::new(
@@ -106,10 +126,18 @@ pub trait GraphicsEnvironment: DrawableDevice {
         )
     }
 
+    /// Set current text color.
+    /// 
+    /// # Parameters
+    /// * `color` - The color to set.
     fn settextcolor(&mut self, color: impl IntoARGB) {
         unsafe { ege_settextcolor(color.into_argb(), self.mut_ptr()) };
     }
 
+    /// Set current font background color.
+    /// 
+    /// # Parameters
+    /// * `color` - The color to set.
     fn setfontbkcolor(&mut self, color: impl IntoARGB) {
         unsafe { ege_setfontbkcolor(color.into_argb(), self.mut_ptr()) };
     }
@@ -328,6 +356,7 @@ pub trait GraphicsEnvironment: DrawableDevice {
     }
 }
 
+/// Point and Color
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct PixelPoint<U: IntoARGB, T = i32> {
     pub x: T,
@@ -335,6 +364,7 @@ pub struct PixelPoint<U: IntoARGB, T = i32> {
     pub color: U,
 }
 
+/// Line
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Line {
     pub x1: i32,
@@ -343,6 +373,7 @@ pub struct Line {
     pub y2: i32,
 }
 
+/// Point
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Point<T = i32> {
     pub x: T,
@@ -1310,18 +1341,38 @@ pub trait HighDraw: DrawableDevice {
         unsafe { ege_ege_outtextxy1(x, y, text.as_ptr(), self.mut_ptr()) };
     }
 
+    /// Draw a path
+    /// 
+    /// # Parameters
+    /// * `path` - The path to draw.
     fn drawpath(&mut self, path: &Path) {
         unsafe { ege_ege_drawpath(path.ptr, self.mut_ptr()) };
     }
 
+    /// Draw a path at position `(x, y)`.
+    /// 
+    /// # Parameters
+    /// * `path` - The path to draw.
+    /// * `x` - The x position.
+    /// * `y` - The y position.
     fn drawpath_at(&mut self, path: &Path, x: f32, y: f32) {
         unsafe { ege_ege_drawpath1(path.ptr, x, y, self.mut_ptr()) };
     }
 
+    /// Draw a filled path.
+    /// 
+    /// # Parameters
+    /// * `path` - The path to draw.
     fn fillpath(&mut self, path: &Path) {
         unsafe { ege_ege_fillpath(path.ptr, self.mut_ptr()) };
     }
 
+    /// Draw a filled path at position `(x, y)`.
+    /// 
+    /// # Parameters
+    /// * `path` - The path to draw.
+    /// * `x` - The x position.
+    /// * `y` - The y position.
     fn fillpath_at(&mut self, path: &Path, x: f32, y: f32) {
         unsafe { ege_ege_fillpath1(path.ptr, x, y, self.mut_ptr()) };
     }
@@ -1331,6 +1382,7 @@ fn rop3(gen_rop3: impl Fn(u32, u32, u32) -> u32) -> u32 {
     gen_rop3(0xF00000, 0xCC0000, 0xAA0000)
 }
 
+/// Rectangle.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Rect<T = i32> {
     pub x: T,
@@ -1591,6 +1643,15 @@ pub trait ImageDraw: DrawableDevice {
         Image::handle_result(result)
     }
 
+    /// Draw an image with alpha blending and a specified alpha type.
+    /// 
+    /// # Parameters
+    /// * `image` - The image to draw.
+    /// * `x_dest` - The x position of the top-left corner of the destination image.
+    /// * `y_dest` - The y position of the top-left corner of the destination image.
+    /// * `transparent` - The alpha value.
+    /// * `alpha` - The alpha value.
+    /// * `src` - The source rectangle.
     fn putimage_alphatransparent(
         &mut self,
         image: &Image,
@@ -1617,6 +1678,18 @@ pub trait ImageDraw: DrawableDevice {
         Image::handle_result(result)
     }
 
+    /// Draw an image with rotation.
+    /// 
+    /// # Parameters
+    /// * `image` - The image to draw.
+    /// * `x_dest` - The x position of the top-left corner of the destination image.
+    /// * `y_dest` - The y position of the top-left corner of the destination image.
+    /// * `x_center` - The x position of the center of the rotation.
+    /// * `y_center` - The y position of the center of the rotation.
+    /// * `radian` - The rotation angle in radian.
+    /// * `use_alpha` - Whether to use alpha blending.
+    /// * `alpha` - The alpha value.
+    /// * `smooth` - Whether to use smooth scaling.
     fn putimage_rotate(
         &mut self,
         image: &Image,
@@ -1650,6 +1723,19 @@ pub trait ImageDraw: DrawableDevice {
         Image::handle_result(result)
     }
 
+    /// Draw an image with rotation and scale.
+    /// 
+    /// # Parameters
+    /// * `image` - The image to draw.
+    /// * `x_dest` - The x position of the top-left corner of the destination image.
+    /// * `y_dest` - The y position of the top-left corner of the destination image.
+    /// * `x_center` - The x position of the center of the rotation.
+    /// * `y_center` - The y position of the center of the rotation.
+    /// * `radian` - The rotation angle in radian.
+    /// * `zoom` - The zoom factor.
+    /// * `use_alpha` - Whether to use alpha blending.
+    /// * `alpha` - The alpha value.
+    /// * `smooth` - Whether to use smooth scaling.
     fn putimage_rotatezoom(
         &mut self,
         image: &Image,
@@ -1685,6 +1771,18 @@ pub trait ImageDraw: DrawableDevice {
         Image::handle_result(result)
     }
 
+    /// Draw an image with rotation and scale with alpha blending.
+    /// 
+    /// # Parameters
+    /// * `image` - The image to draw.
+    /// * `x_center_dest` - The x position of the center of the destination image.
+    /// * `y_center_dest` - The y position of the center of the destination image.
+    /// * `src` - The source rectangle.
+    /// * `x_center_src` - The x position of the center of the source image.
+    /// * `y_center_src` - The y position of the center of the source image.
+    /// * `transparent` - The alpha image.
+    /// * `radian` - The rotation angle in radian.
+    /// * `zoom` - The zoom factor.
     fn putimage_rotatetransparent(
         &mut self,
         image: &Image,
@@ -1717,10 +1815,16 @@ pub trait ImageDraw: DrawableDevice {
         Image::handle_result(result)
     }
 
+    /// Blur the image.
+    /// 
+    /// # Parameters
+    /// * `intensity` - The intensity of the blur.
+    /// * `alpha` - The light value.
+    /// * `dest` - The destination rectangle.
     fn imagefilter_blurring(
         &mut self,
         intensity: i32,
-        alpha: u8,
+        alpha: u32,
         dest: Option<Rect>,
     ) -> Result<(), ImageError> {
         let rect = dest.unwrap_or_else(|| Rect {
@@ -1743,10 +1847,22 @@ pub trait ImageDraw: DrawableDevice {
         Image::handle_result(result)
     }
 
+    /// Draw an image with a specified position.
+    /// 
+    /// # Parameters
+    /// * `image` - The image to draw.
+    /// * `x` - The x position.
+    /// * `y` - The y position.
     fn drawimage(&mut self, image: &Image, x: i32, y: i32) {
         unsafe { ege_ege_drawimage(image.const_ptr(), x, y, self.mut_ptr()) };
     }
 
+    /// Draw an image with scale.
+    /// 
+    /// # Parameters
+    /// * `image` - The image to draw.
+    /// * `dest` - The destination rectangle.
+    /// * `src` - The source rectangle.
     fn drawimage_with_scale(&mut self, image: &Image, dest: Rect, src: Rect) {
         unsafe {
             ege_ege_drawimage1(

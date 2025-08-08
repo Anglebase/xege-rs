@@ -15,8 +15,11 @@ pub enum ImageError {
     IOError,
     #[error("Other Unknown error.")]
     UnknownError,
+    #[error("Path parsing error.")]
+    PathParserError,
 }
 
+/// Image
 #[derive(Debug)]
 pub struct Image {
     ptr: *mut ege_IMAGE,
@@ -45,6 +48,14 @@ impl Drop for Image {
 }
 
 impl Image {
+    /// Create a new image.
+    ///
+    /// # Parameters
+    /// - `width`: The width of the image.
+    /// - `height`: The height of the image.
+    ///
+    /// # Returns
+    /// A new `Image` object.
     pub fn new(width: i32, height: i32) -> Self {
         Self {
             ptr: unsafe { ege_newimage1(width, height) },
@@ -62,19 +73,53 @@ impl Image {
         }
     }
 
-    pub fn from_file(filename: &str) -> Result<Self, ImageError> {
+    /// Load an image from a file.
+    ///
+    /// # Parameters
+    /// - `filename`: The filename of the image.
+    ///
+    /// # Returns
+    /// A new `Image` object. Or an error.
+    pub fn from_file<P: AsRef<std::path::Path>>(path: P) -> Result<Self, ImageError> {
         let ptr = unsafe { ege_newimage() };
-        let filename = filename.encode_utf16().chain(Some(0)).collect::<Vec<u16>>();
-        let result = unsafe { ege_getimage3(ptr, filename.as_ptr(), 0, 0) };
+        let path = path
+            .as_ref()
+            .to_str()
+            .map_or_else(|| Err(ImageError::PathParserError), |s| Ok(s))?
+            .encode_utf16()
+            .chain(Some(0))
+            .collect::<Vec<u16>>();
+        let result = unsafe { ege_getimage3(ptr, path.as_ptr(), 0, 0) };
         Self::handle_result(result).map(|_| Self { ptr })
     }
 
+    /// Load an image from a window.
+    ///
+    /// # Parameters
+    /// - `x`: The x position of the window.
+    /// - `y`: The y position of the window.
+    /// - `width`: The width of the window.
+    /// - `height`: The height of the window.
+    ///
+    /// # Returns
+    /// A new `Image` object. Or an error.
     pub fn from_window(x: i32, y: i32, width: i32, height: i32) -> Result<Self, ImageError> {
         let ptr = unsafe { ege_newimage() };
         let result = unsafe { ege_getimage(ptr, x, y, width, height) };
         Self::handle_result(result).map(|_| Self { ptr })
     }
 
+    /// Load an image from another image.
+    ///
+    /// # Parameters
+    /// - `image`: The source image.
+    /// - `x`: The x position of the source image.
+    /// - `y`: The y position of the source image.
+    /// - `width`: The width of the source image.
+    /// - `height`: The height of the source image.
+    ///
+    /// # Returns
+    /// A new `Image` object. Or an error.
     pub fn from_image(
         image: &Image,
         x: i32,
@@ -87,16 +132,44 @@ impl Image {
         Self::handle_result(result).map(|_| Self { ptr })
     }
 
-    pub fn save(&self, filename: &str, with_alpha: bool) -> Result<(), ImageError> {
-        let filename = filename.encode_utf16().chain(Some(0)).collect::<Vec<u16>>();
-        let result = unsafe { ege_saveimage1(self.ptr, filename.as_ptr(), with_alpha) };
+    /// Save an image to a file.
+    ///
+    /// # Parameters
+    /// - `filename`: The filename of the image.
+    /// - `with_alpha`: Whether to save the alpha channel.
+    ///
+    /// # Note
+    /// It only supports BMP and PNG formats.
+    pub fn save<P: AsRef<std::path::Path>>(
+        &self,
+        path: P,
+        with_alpha: bool,
+    ) -> Result<(), ImageError> {
+        let path = path
+            .as_ref()
+            .to_str()
+            .map_or_else(|| Err(ImageError::PathParserError), |s| Ok(s))?
+            .encode_utf16()
+            .chain(Some(0))
+            .collect::<Vec<u16>>();
+        let result = unsafe { ege_saveimage1(self.ptr, path.as_ptr(), with_alpha) };
         Self::handle_result(result)
     }
 }
 
 impl Image {
+    /// Resize the image.
+    ///
+    /// # Parameters
+    /// - `width`: The new width of the image.
+    /// - `height`: The new height of the image.
     pub fn resize(&mut self, width: i32, height: i32) -> Result<(), ImageError> {
         let result = unsafe { ege_resize(self.ptr, width, height) };
+        Self::handle_result(result)
+    }
+
+    pub unsafe fn resize_f(&mut self, width: i32, height: i32) -> Result<(), ImageError> {
+        let result = unsafe { ege_resize_f(self.ptr, width, height) };
         Self::handle_result(result)
     }
 }

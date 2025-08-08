@@ -2,6 +2,7 @@ use xege_ffi::*;
 
 use crate::{Key, KeyFlags, KeyMsg, MouseMsg, Point};
 
+/// Window handle.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Window(pub(crate) *mut ());
 
@@ -44,10 +45,21 @@ impl Window {
         unsafe { ege_hidewindow() };
     }
 
+    /// Get the state of specified key.
+    ///
+    /// # Parameters
+    /// * `key` - The key to check.
+    ///
+    /// # Returns
+    /// * `true` if the key is pressed, `false` otherwise.
     pub fn keystate(&self, key: Key) -> bool {
         unsafe { ege_keystate(<Key as Into<u32>>::into(key) as i32) }
     }
 
+    /// Get next character message.
+    /// 
+    /// # Returns
+    /// * `Some(char)` if has character message, `None` otherwise.
     pub fn getchar(&self) -> Option<char> {
         if unsafe { ege_kbhit() != 0 } {
             char::from_u32(unsafe { ege_getch() as u32 })
@@ -56,6 +68,10 @@ impl Window {
         }
     }
 
+    /// Get next key message.
+    ///
+    /// # Returns
+    /// * `Some((KeyMsg, KeyFlags))` if has key message, `None` otherwise.
     pub fn getmsg(&self) -> Option<(KeyMsg, KeyFlags)> {
         if unsafe { ege_kbmsg() != 0 } {
             let msg = unsafe { ege_getkey() };
@@ -83,10 +99,15 @@ impl Window {
         }
     }
 
+    /// Flush the key message buffer.
     pub fn flushkey(&self) {
         unsafe { ege_flushkey() };
     }
 
+    /// Get next mouse message.
+    ///
+    /// # Returns
+    /// * `Some(MouseMsg)` if has mouse message, `None` otherwise.
     pub fn getmouse(&self) -> Option<MouseMsg> {
         if unsafe { ege_mousemsg() != 0 } {
             let msg = unsafe { ege_getmouse() };
@@ -96,16 +117,25 @@ impl Window {
         }
     }
 
+    /// Get the current mouse position.
+    /// 
+    /// # Returns
+    /// The current mouse position.
     pub fn mousepos(&self) -> Point {
         let mut p = Point { x: 0, y: 0 };
         unsafe { ege_mousepos(&mut p.x, &mut p.y) };
         p
     }
     
+    /// Set the mouse cursor visible or not.
+    /// 
+    /// # Parameters
+    /// * `visible` - If true, the mouse cursor will be visible.
     pub fn showmouse(&self, show: bool) {
         unsafe { ege_showmouse(show as i32) };
     }
 
+    /// Flush the mouse message buffer.
     pub fn flushmouse(&self) {
         unsafe { ege_flushmouse() };
     }

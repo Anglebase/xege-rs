@@ -2,31 +2,51 @@ use std::ops::BitOr;
 
 use xege_ffi::*;
 
+/// Fill pattern enumeration.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[repr(i32)]
 pub enum FillPattern {
+    /// Empty fill pattern.
     Empty = ege_fill_patterns_EMPTY_FILL,
+    /// Solid fill pattern.
     Solid = ege_fill_patterns_SOLID_FILL,
+    /// --- fill
     Line = ege_fill_patterns_LINE_FILL,
+    /// /// fill
     LtSlash = ege_fill_patterns_LTSLASH_FILL,
+    /// /// fill with thick lines
     Slash = ege_fill_patterns_SLASH_FILL,
+    /// \\\ fill with thick lines
     BkSlash = ege_fill_patterns_BKSLASH_FILL,
+    /// \\\ fill
     LtBkSlash = ege_fill_patterns_LTBKSLASH_FILL,
+    /// Light hatch fill
     Hatch = ege_fill_patterns_HATCH_FILL,
+    /// Heavy cross hatch fill
     XHatch = ege_fill_patterns_XHATCH_FILL,
+    /// Interleaving line fill
     Interleave = ege_fill_patterns_INTERLEAVE_FILL,
+    /// Widely spaced dot fill
     WideDot = ege_fill_patterns_WIDE_DOT_FILL,
+    /// Closely spaced dot fill
     CloseDot = ege_fill_patterns_CLOSE_DOT_FILL,
+    /// User defined fill
     UserDefined = ege_fill_patterns_USER_FILL,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum LineStyle {
+    /// Solid line style.
     Solid,
+    /// Style: －－－－－－－－－－－－
     Center,
+    /// Style: ··············
     Dotted,
+    /// Style: －·－·－·－·－·－·
     Dashed,
+    /// Null line style.
     Null,
+    /// User defined line style.
     UserDef(u16),
 }
 
@@ -185,13 +205,30 @@ impl TryFrom<u32> for CharSet {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub enum OutPrecision {
     #[default]
+    /// Specifies the default font mapper behavior.
     Default = OUT_DEFAULT_PRECIS,
+    /// Instructs the font mapper to choose a Device font when
+    /// the system contains multiple fonts with the same name.
     Device = OUT_DEVICE_PRECIS,
+    /// This value instructs the font mapper to choose from
+    /// TrueType and other outline-based fonts.
     Outline = OUT_OUTLINE_PRECIS,
+    /// Instructs the font mapper to choose a raster font when
+    /// the system contains multiple fonts with the same name.
     Raster = OUT_RASTER_PRECIS,
+    /// This value is not used by the font mapper,
+    /// but it is returned when raster fonts are enumerated.
     String = OUT_STRING_PRECIS,
+    /// This value is not used by the font mapper,
+    /// but it is returned when TrueType, other outline-based
+    /// fonts, and vector fonts are enumerated.
     Stroke = OUT_STROKE_PRECIS,
+    /// Instructs the font mapper to choose from only TrueType
+    /// fonts. If there are no TrueType fonts installed in the
+    /// system, the font mapper returns to default behavior.
     TureTypeOnly = OUT_TT_ONLY_PRECIS,
+    /// Instructs the font mapper to choose a TrueType font when
+    /// the system contains multiple fonts with the same name.
     TureType = OUT_TT_PRECIS,
 }
 
@@ -217,9 +254,19 @@ impl TryFrom<u32> for OutPrecision {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub enum ClipPrecision {
     #[default]
+    /// Specifies default clipping behavior.
     DefaultPrecis = CLIP_DEFAULT_PRECIS,
+    /// Not used by the font mapper, but is returned when raster,
+    /// vector, or TrueType fonts are enumerated. For compatibility,
+    /// this value is always returned when enumerating fonts.
     StrokePrecis = CLIP_STROKE_PRECIS,
+    /// You must specify this flag to use an embedded read-only font.
     Embedded = CLIP_EMBEDDED,
+    /// When this value is used, the rotation for all fonts depends
+    /// on whether the orientation of the coordinate system is
+    /// left-handed or right-handed.If not used, device fonts always
+    /// rotate counterclockwise, but the rotation of other fonts is
+    /// dependent on the orientation of the coordinate system.
     LhAngles = CLIP_LH_ANGLES,
 }
 
@@ -240,11 +287,27 @@ impl TryFrom<u32> for ClipPrecision {
 #[repr(u32)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub enum Quality {
+    /// Font is always antialiased if the font supports it
+    /// and the size of the font is not too small or too large.
     Antialiased = ANTIALIASED_QUALITY,
+    /// Appearance of the font does not matter.
     #[default]
     Default = DEFAULT_QUALITY,
+    /// Appearance of the font is less important than when
+    /// PROOF_QUALITY is used. For GDI raster fonts, scaling
+    /// is enabled, which means that more font sizes are available,
+    /// but the quality may be lower. Bold, italic, underline,
+    /// and strikeout fonts are synthesized if necessary.
     Draft = DRAFT_QUALITY,
+    /// Font is never antialiased.
     NonAntialiased = NONANTIALIASED_QUALITY,
+    /// Character quality of the font is more important than exact
+    /// matching of the logical-font attributes. For GDI raster fonts,
+    /// scaling is disabled and the font closest in size is chosen.
+    /// Although the chosen font size may not be mapped exactly when
+    /// PROOF_QUALITY is used, the quality of the font is high and
+    /// there is no distortion of appearance. Bold, italic, underline,
+    /// and strikeout fonts are synthesized if necessary.
     Proof = PROOF_QUALITY,
 }
 
@@ -288,11 +351,22 @@ impl TryFrom<u32> for Pitch {
 #[repr(u32)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum FontFamily {
+    /// Novelty fonts. Old English is an example.
     Decorative = FF_DECORATIVE,
+    /// Use default font.
     Dontcare = FF_DONTCARE,
+    /// Fonts with constant stroke width (monospace),
+    /// with or without serifs. Monospace fonts are usually modern.
+    /// Pica, Elite, and CourierNew are examples.
     Modern = FF_MODERN,
+    /// Fonts with variable stroke width (proportional) and with serifs.
+    /// MS Serif is an example.
     Roman = FF_ROMAN,
+    /// Fonts designed to look like handwriting.
+    /// Script and Cursive are examples.
     Script = FF_SCRIPT,
+    /// Fonts with variable stroke width (proportional) and without serifs.
+    /// MS Sans Serif is an example.
     Swiss = FF_SWISS,
 }
 
