@@ -169,6 +169,11 @@ impl Image {
         Self::handle_result(result)
     }
 
+    /// Resize the image.
+    ///
+    /// # Parameters
+    /// - `width`: The new width of the image.
+    /// - `height`: The new height of the image.
     pub unsafe fn resize_f(&mut self, width: i32, height: i32) -> Result<(), ImageError> {
         let result = unsafe { ege_resize_f(self.ptr, width, height) };
         Self::handle_result(result)
@@ -185,13 +190,22 @@ impl Clone for Image {
 
 use crate::ARGB;
 
+/// Edge pixel processing mode.
+/// 
+/// It is used to describe the handling method when
+/// the template element position does not match the pixel.
 pub enum TemplateMode {
+    /// Treat non-existent pixels as white(0xFFFFFF).
     White,
+    /// Treat non-existent pixels as black(0x000000).
     Black,
+    /// Ignore non-existent pixels.
     Ignore,
+    /// Ignore pixel regions that cannot be perfectly matched by the template.
     DotCare,
 }
 
+/// Mask channels to apply.
 #[bitmask_enum::bitmask]
 pub enum ApplyMask {
     Red,
@@ -201,18 +215,37 @@ pub enum ApplyMask {
 }
 
 impl Image {
+    /// Apply a transformation to the image.
+    ///
+    /// # Parameters
+    /// - `trans`: The transformation function.
+    ///
+    /// # Note
+    /// The transformation function takes an ARGB pixel as input and returns an ARGB pixel as output.
+    /// This function will be applied to all pixels of the image.
     pub fn transform(&mut self, trans: impl Fn(ARGB) -> ARGB) {
         for pixel in self.getbuffer_mut().iter_mut() {
             *pixel = trans(*pixel);
         }
     }
 
+    /// Apply a template to the image.
+    ///
+    /// # Parameters
+    /// - `mask`: The template mask.
+    /// - `apply`: The mask channels to apply.
+    /// - `mode`: The template mode.
+    ///
+    /// # Returns
+    /// A new `Image` object.
     pub fn template<const N: usize>(
         &mut self,
         mask: Mat<f32, N, N>,
         apply: ApplyMask,
         mode: TemplateMode,
     ) -> Self {
+        #[cfg(debug_assertions)]
+        assert!(N % 2 == 1, "The template size must be odd.");
         let width = self.getwidth();
         let height = self.getheight();
         let mut img = Image::new(width, height);
