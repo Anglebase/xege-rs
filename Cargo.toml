@@ -1,6 +1,6 @@
 [package]
 name = "xege"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 categories = ["external-ffi-bindings", "game-development", "graphics", "gui", "rendering::graphics-api"]
 license = "MIT"
@@ -9,9 +9,17 @@ homepage = "https://xege.org"
 description = "Rust style safe warpper of C++ graphics libraries."
 
 [dependencies]
-xege-ffi = "0.1.3"
+xege-ffi = "0.1.4"
 thiserror = "2.0.12"
 bitmask-enum = "2.2.5"
 palette = { version = "0.7.6", features = ["named"] }
 mats = "0.2.0"
 lazy_static = "1.5.0"
+
+[package.metadata.docs.rs]
+default-target = "x86_64-pc-windows-msvc"
+targets = [
+    "aarch64-pc-windows-msvc",
+    "i686-pc-windows-msvc",
+    "x86_64-pc-windows-msvc",
+]
