@@ -4,6 +4,8 @@ use crate::{Color, Image, Path};
 use crate::{ImageError, enums::*};
 use xege_ffi::*;
 
+pub type ARGB = u32;
+
 /// Base trait for drawable devices.
 pub trait DrawableDevice {
     fn mut_ptr(&mut self) -> *mut ege_IMAGE;
@@ -39,7 +41,7 @@ pub trait GraphicsEnvironment: DrawableDevice {
     }
 
     /// Set current background color.
-    /// 
+    ///
     /// # Parameters
     /// * `color` - The color to set.
     fn setbkcolor(&mut self, color: impl IntoARGB) {
@@ -47,7 +49,7 @@ pub trait GraphicsEnvironment: DrawableDevice {
     }
 
     /// Set current background mode.
-    /// 
+    ///
     /// # Parameters
     /// * `mode` - The mode to set.
     fn setbkmode(&mut self, mode: BkMode) {
@@ -55,7 +57,7 @@ pub trait GraphicsEnvironment: DrawableDevice {
     }
 
     /// Get current background color.
-    /// 
+    ///
     /// # Return
     /// The color of the background.
     fn getbkcolor(&self) -> Color {
@@ -94,7 +96,7 @@ pub trait GraphicsEnvironment: DrawableDevice {
     }
 
     /// Get current color.
-    /// 
+    ///
     /// # Return
     /// The color of the environment.
     fn getcolor(&self) -> Color {
@@ -112,7 +114,7 @@ pub trait GraphicsEnvironment: DrawableDevice {
     }
 
     /// Set current text color.
-    /// 
+    ///
     /// # Parameters
     /// * `color` - The color to set.
     fn settextcolor(&mut self, color: impl IntoARGB) {
@@ -120,7 +122,7 @@ pub trait GraphicsEnvironment: DrawableDevice {
     }
 
     /// Set current font background color.
-    /// 
+    ///
     /// # Parameters
     /// * `color` - The color to set.
     fn setfontbkcolor(&mut self, color: impl IntoARGB) {
@@ -208,13 +210,13 @@ pub trait GraphicsEnvironment: DrawableDevice {
     }
 
     /// Get device width.
-    fn getwidth(&self) -> i32 {
-        unsafe { ege_getwidth(self.const_ptr()) }
+    fn getwidth(&self) -> u32 {
+        unsafe { ege_getwidth(self.const_ptr()) as _ }
     }
 
     /// Get device height.
-    fn getheight(&self) -> i32 {
-        unsafe { ege_getheight(self.const_ptr()) }
+    fn getheight(&self) -> u32 {
+        unsafe { ege_getheight(self.const_ptr()) as _ }
     }
 
     /// Get current x position.
@@ -286,9 +288,9 @@ pub trait GraphicsEnvironment: DrawableDevice {
     ///
     /// # Return
     /// The height of the text.
-    fn textheight(&mut self, text: &str) -> i32 {
+    fn textheight(&mut self, text: &str) -> u32 {
         let wchar = text.encode_utf16().chain(Some(0)).collect::<Vec<u16>>();
-        unsafe { ege_textheight1(wchar.as_ptr(), self.mut_ptr()) }
+        unsafe { ege_textheight1(wchar.as_ptr(), self.mut_ptr()) as _ }
     }
 
     /// Get text width.
@@ -298,9 +300,9 @@ pub trait GraphicsEnvironment: DrawableDevice {
     ///
     /// # Return
     /// The width of the text.
-    fn textwidth(&mut self, text: &str) -> i32 {
+    fn textwidth(&mut self, text: &str) -> u32 {
         let wchar = text.encode_utf16().chain(Some(0)).collect::<Vec<u16>>();
-        unsafe { ege_textwidth1(wchar.as_ptr(), self.mut_ptr()) }
+        unsafe { ege_textwidth1(wchar.as_ptr(), self.mut_ptr()) as _ }
     }
 
     /// Set Text alignment.
@@ -312,13 +314,26 @@ pub trait GraphicsEnvironment: DrawableDevice {
         unsafe { ege_settextjustify(horiz as i32, vert as i32, self.mut_ptr()) };
     }
 
-    /// Get image pixel buffer pointer.
-    ///
+    /// Get image pixel buffer.
+    /// 
     /// # Return
-    /// Pointer to the starting position of the image data memory.
-    /// Each `u32` represents a pixel in `ARGB` format.
-    fn getbuffer(&mut self) -> *mut u32 {
-        unsafe { ege_getbuffer(self.mut_ptr()) }
+    /// The pixel buffer.
+    fn getbuffer(&self) -> &[ARGB] {
+        let ptr = unsafe { ege_getbuffer(self.const_ptr() as _) };
+        let width = self.getwidth();
+        let height = self.getheight();
+        unsafe { std::slice::from_raw_parts(ptr, (width * height) as usize) }
+    }
+
+    /// Get mutable image pixel buffer.
+    /// 
+    /// # Return
+    /// The mutable pixel buffer.
+    fn getbuffer_mut(&mut self) -> &mut [ARGB] {
+        let ptr = unsafe { ege_getbuffer(self.mut_ptr()) };
+        let width = self.getwidth();
+        let height = self.getheight();
+        unsafe { std::slice::from_raw_parts_mut(ptr, (width * height) as usize) }
     }
 
     /// Set global alpha transparency.
@@ -1317,7 +1332,7 @@ pub trait HighDraw: DrawableDevice {
     }
 
     /// Draw a path
-    /// 
+    ///
     /// # Parameters
     /// * `path` - The path to draw.
     fn drawpath(&mut self, path: &Path) {
@@ -1325,7 +1340,7 @@ pub trait HighDraw: DrawableDevice {
     }
 
     /// Draw a path at position `(x, y)`.
-    /// 
+    ///
     /// # Parameters
     /// * `path` - The path to draw.
     /// * `x` - The x position.
@@ -1335,7 +1350,7 @@ pub trait HighDraw: DrawableDevice {
     }
 
     /// Draw a filled path.
-    /// 
+    ///
     /// # Parameters
     /// * `path` - The path to draw.
     fn fillpath(&mut self, path: &Path) {
@@ -1343,7 +1358,7 @@ pub trait HighDraw: DrawableDevice {
     }
 
     /// Draw a filled path at position `(x, y)`.
-    /// 
+    ///
     /// # Parameters
     /// * `path` - The path to draw.
     /// * `x` - The x position.
@@ -1619,7 +1634,7 @@ pub trait ImageDraw: DrawableDevice {
     }
 
     /// Draw an image with alpha blending and a specified alpha type.
-    /// 
+    ///
     /// # Parameters
     /// * `image` - The image to draw.
     /// * `x_dest` - The x position of the top-left corner of the destination image.
@@ -1654,7 +1669,7 @@ pub trait ImageDraw: DrawableDevice {
     }
 
     /// Draw an image with rotation.
-    /// 
+    ///
     /// # Parameters
     /// * `image` - The image to draw.
     /// * `x_dest` - The x position of the top-left corner of the destination image.
@@ -1699,7 +1714,7 @@ pub trait ImageDraw: DrawableDevice {
     }
 
     /// Draw an image with rotation and scale.
-    /// 
+    ///
     /// # Parameters
     /// * `image` - The image to draw.
     /// * `x_dest` - The x position of the top-left corner of the destination image.
@@ -1747,7 +1762,7 @@ pub trait ImageDraw: DrawableDevice {
     }
 
     /// Draw an image with rotation and scale with alpha blending.
-    /// 
+    ///
     /// # Parameters
     /// * `image` - The image to draw.
     /// * `x_center_dest` - The x position of the center of the destination image.
@@ -1791,7 +1806,7 @@ pub trait ImageDraw: DrawableDevice {
     }
 
     /// Blur the image.
-    /// 
+    ///
     /// # Parameters
     /// * `intensity` - The intensity of the blur.
     /// * `alpha` - The light value.
@@ -1823,7 +1838,7 @@ pub trait ImageDraw: DrawableDevice {
     }
 
     /// Draw an image with a specified position.
-    /// 
+    ///
     /// # Parameters
     /// * `image` - The image to draw.
     /// * `x` - The x position.
@@ -1833,7 +1848,7 @@ pub trait ImageDraw: DrawableDevice {
     }
 
     /// Draw an image with scale.
-    /// 
+    ///
     /// # Parameters
     /// * `image` - The image to draw.
     /// * `dest` - The destination rectangle.

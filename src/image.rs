@@ -1,3 +1,4 @@
+use mats::Mat;
 use std::fmt::Display;
 use xege_ffi::*;
 
@@ -56,9 +57,9 @@ impl Image {
     ///
     /// # Returns
     /// A new `Image` object.
-    pub fn new(width: i32, height: i32) -> Self {
+    pub fn new(width: u32, height: u32) -> Self {
         Self {
-            ptr: unsafe { ege_newimage1(width, height) },
+            ptr: unsafe { ege_newimage1(width.max(1) as _, height.max(1) as _) },
         }
     }
 
@@ -178,6 +179,90 @@ impl Clone for Image {
     fn clone(&self) -> Self {
         let mut img = Image::new(self.getwidth(), self.getheight());
         img.drawimage(self, 0, 0);
+        img
+    }
+}
+
+use crate::ARGB;
+
+pub enum TemplateMode {
+    White,
+    Black,
+    Ignore,
+    DotCare,
+}
+
+#[bitmask_enum::bitmask]
+pub enum ApplyMask {
+    Red,
+    Blue,
+    Green,
+    All = 15,
+}
+
+impl Image {
+    pub fn transform(&mut self, trans: impl Fn(ARGB) -> ARGB) {
+        for pixel in self.getbuffer_mut().iter_mut() {
+            *pixel = trans(*pixel);
+        }
+    }
+
+    pub fn template<const N: usize>(
+        &mut self,
+        mask: Mat<f32, N, N>,
+        apply: ApplyMask,
+        mode: TemplateMode,
+    ) -> Self {
+        let width = self.getwidth();
+        let height = self.getheight();
+        let mut img = Image::new(width, height);
+        let src = self.getbuffer();
+        let dst = img.getbuffer_mut();
+        for i in 0..height {
+            for j in 0..width {
+                let (mut sum_red, mut sum_green, mut sum_blue) = (0.0, 0.0, 0.0);
+                let mut is_dont_care = false;
+                'dor_care: for m in 0..N as u32 {
+                    for n in 0..N as u32 {
+                        let x = (i + m) as i32 - N as i32 / 2;
+                        let y = (j + n) as i32 - N as i32 / 2;
+                        let c;
+                        if x < 0 || x >= height as i32 || y < 0 || y >= width as i32 {
+                            match mode {
+                                TemplateMode::White => c = 0xFFFFFF,
+                                TemplateMode::Black => c = 0x0,
+                                TemplateMode::Ignore => continue,
+                                TemplateMode::DotCare => {
+                                    is_dont_care = true;
+                                    break 'dor_care;
+                                }
+                            }
+                        } else {
+                            c = src[(x as u32 * width + y as u32) as usize];
+                        }
+                        if apply.contains(ApplyMask::Red) {
+                            sum_red += mask[m as usize][n as usize] * ((c >> 16) & 0xFF) as f32;
+                        }
+                        if apply.contains(ApplyMask::Green) {
+                            sum_green += mask[m as usize][n as usize] * ((c >> 8) & 0xFF) as f32;
+                        }
+                        if apply.contains(ApplyMask::Blue) {
+                            sum_blue += mask[m as usize][n as usize] * (c & 0xFF) as f32;
+                        }
+                    }
+                }
+                if !is_dont_care {
+                    let red = sum_red.max(0.0).min(255.0) as u8;
+                    let green = sum_green.max(0.0).min(255.0) as u8;
+                    let blue = sum_blue.max(0.0).min(255.0) as u8;
+                    let alpha = 0xFF;
+                    dst[(i * width + j) as usize] = ((alpha as u32) << 24)
+                        | ((red as u32) << 16)
+                        | ((green as u32) << 8)
+                        | blue as u32;
+                }
+            }
+        }
         img
     }
 }

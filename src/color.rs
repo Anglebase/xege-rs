@@ -2,7 +2,7 @@
 pub struct Color(palette::Srgba<u8>);
 
 impl Color {
-    pub fn from_argb(argb: u32) -> Self {
+    pub fn from_argb(argb: ARGB) -> Self {
         Color(palette::Srgba::<u8>::new(
             ((argb >> 16) & 0xff) as _,
             ((argb >> 8) & 0xff) as _,
@@ -61,6 +61,8 @@ impl IntoARGB for palette::rgb::Srgb<u8> {
 pub use palette::named::*;
 
 use std::ops::{Deref, DerefMut};
+
+use crate::ARGB;
 
 impl Deref for Color {
     type Target = palette::Srgba<u8>;
