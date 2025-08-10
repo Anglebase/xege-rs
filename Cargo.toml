@@ -1,6 +1,6 @@
 [package]
 name = "xege"
-version = "0.2.1"
+version = "0.2.2"
 edition = "2024"
 categories = ["external-ffi-bindings", "game-development", "graphics", "gui", "rendering::graphics-api"]
 license = "MIT"
@@ -16,6 +16,7 @@ bitmask-enum = "2.2.5"
 palette = { version = "0.7.6", features = ["named"] }
 mats = "0.2.0"
 lazy_static = "1.5.0"
+image = "0.25.6"
 
 [package.metadata.docs.rs]
 default-target = "x86_64-pc-windows-msvc"
