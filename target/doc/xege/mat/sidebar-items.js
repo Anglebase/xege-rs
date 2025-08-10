@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["look_at","ortho","perspective","radian","rotate2","rotate3","rotate3_x","rotate3_y","rotate3_z","scale2","scale3","translate2","translate3"],"mod":["dynamic"],"struct":["Mat"],"trait":["IntoEGEMatrix"],"type":["Mat2","Mat2x3","Mat2x4","Mat3","Mat3x2","Mat3x4","Mat4","Mat4x2","Mat4x3","Vec","Vec2","Vec3","Vec4"]};
