@@ -57,9 +57,14 @@ impl Window {
     }
 
     /// Get next character message.
-    /// 
+    ///
     /// # Returns
     /// * `Some(char)` if has character message, `None` otherwise.
+    ///
+    /// # Bug
+    /// When inputting through an input method, this function produces unexpected character capture.
+    /// The `KeyMsg::Char` variant returned by the `getmsg` function should be used instead.
+    #[deprecated(since = "0.1.0", note = "Use `KeyMsg::Char` and `getmsg` instead.")]
     pub fn getchar(&self) -> Option<char> {
         if unsafe { ege_kbhit() != 0 } {
             char::from_u32(unsafe { ege_getch() as u32 })
@@ -118,7 +123,7 @@ impl Window {
     }
 
     /// Get the current mouse position.
-    /// 
+    ///
     /// # Returns
     /// The current mouse position.
     pub fn mousepos(&self) -> Point {
@@ -126,9 +131,9 @@ impl Window {
         unsafe { ege_mousepos(&mut p.x, &mut p.y) };
         p
     }
-    
+
     /// Set the mouse cursor visible or not.
-    /// 
+    ///
     /// # Parameters
     /// * `visible` - If true, the mouse cursor will be visible.
     pub fn showmouse(&self, show: bool) {
