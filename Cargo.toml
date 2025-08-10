@@ -7,6 +7,7 @@ license = "MIT"
 repository = "https://github.com/Anglebase/xege-rs.git"
 homepage = "https://xege.org"
 description = "Rust style safe warpper of C++ graphics libraries."
+documentation = "https://anglebase.github.io/xege-rs/"
 
 [dependencies]
 xege-ffi = "0.1.4"
