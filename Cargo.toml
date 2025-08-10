@@ -1,6 +1,6 @@
 [package]
 name = "xege"
-version = "0.2.2"
+version = "0.2.3"
 edition = "2024"
 categories = ["game-development", "graphics", "gui", "rendering::graphics-api"]
 license = "MIT"
